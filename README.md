@@ -1,4 +1,4 @@
-# Phoenix Fitness Website Admin Setup
+# phx-fitness
 
 This project is a Next.js app with:
 
