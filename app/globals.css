@@ -420,6 +420,17 @@ img {
   width: fit-content;
 }
 
+.sectionCta {
+  display: inline-flex;
+  margin-top: 8px;
+  width: fit-content;
+}
+
+.sectionCta.centered {
+  display: flex;
+  margin: 34px auto 0;
+}
+
 .differenceGrid {
   grid-template-columns: repeat(3, 1fr);
 }
@@ -626,7 +637,8 @@ img {
   position: relative;
 }
 
-.pageHero > img {
+.pageHero > img,
+.pageHero > video {
   height: 100%;
   inset: 0;
   object-fit: cover;
@@ -665,6 +677,13 @@ img {
   margin: 0 0 18px;
 }
 
+.pageHeroActions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .pageHero span,
 .splitStory span,
 .intakeIntro span {
@@ -691,7 +710,8 @@ img {
   direction: ltr;
 }
 
-.splitStory img {
+.splitStory img,
+.splitStory video {
   border-radius: 8px;
   height: 520px;
   object-fit: cover;
@@ -756,10 +776,16 @@ img {
 
 .processTimeline {
   background: #fff;
+  display: block;
+  padding: 72px 80px;
+}
+
+.processGrid {
   display: grid;
   gap: 18px;
   grid-template-columns: repeat(4, 1fr);
-  padding: 56px 80px;
+  margin: 0 auto;
+  max-width: 1280px;
 }
 
 .processTimeline article {
@@ -767,7 +793,15 @@ img {
   padding: 8px 20px;
 }
 
-.processTimeline span {
+.processTimeline img {
+  border-radius: 7px;
+  height: 170px;
+  margin-bottom: 16px;
+  object-fit: cover;
+  width: 100%;
+}
+
+.processTimeline article > span {
   color: var(--orange);
   font-weight: 900;
 }
@@ -788,6 +822,11 @@ img {
   gap: 24px;
   grid-template-columns: repeat(3, 1fr);
   padding: 80px;
+}
+
+.trainerDetailGrid > .sectionHeader,
+.trainerDetailGrid > .sectionCta {
+  grid-column: 1 / -1;
 }
 
 .trainerDetailGrid article {
@@ -846,6 +885,14 @@ img {
 }
 
 .intakeBackdrop img {
+  filter: saturate(0.85);
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.22;
+  width: 100%;
+}
+
+.intakeBackdrop video {
   filter: saturate(0.85);
   height: 100%;
   object-fit: cover;
@@ -1154,7 +1201,7 @@ img {
   .stepGrid,
   .footer,
   .featureGrid,
-  .processTimeline,
+  .processGrid,
   .trainerDetailGrid,
   .intakeSection,
   .intakeShell {
@@ -1171,7 +1218,8 @@ img {
     font-size: 42px;
   }
 
-  .splitStory img {
+  .splitStory img,
+  .splitStory video {
     height: 360px;
   }
 
@@ -1524,7 +1572,8 @@ img {
   margin-top: 16px;
 }
 
-.adminUpload img {
+.adminUpload img,
+.adminUpload video {
   background: #f4f4f4;
   border-radius: 6px;
   height: 120px;

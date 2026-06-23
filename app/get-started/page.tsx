@@ -1,4 +1,5 @@
 import ContactForm from "../components/ContactForm";
+import { PageSectionRenderer, SiteFooter } from "../components/SiteShell";
 import { getSiteContent } from "../lib/db";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +12,11 @@ export default async function GetStartedPage() {
     <main className="intakePage">
       <section className="intakeExperience" id="intake">
         <div className="intakeBackdrop">
-          <img src={page.hero.image} alt="" />
+          {page.hero.video ? (
+            <video src={page.hero.video} poster={page.hero.image} autoPlay muted loop playsInline />
+          ) : (
+            <img src={page.hero.image} alt="" />
+          )}
         </div>
         <div className="intakeShell">
           <div className="intakeHeroCopy">
@@ -22,6 +27,10 @@ export default async function GetStartedPage() {
           <ContactForm buttonLabel="Send My Intake" successMessage={content.contact.success} />
         </div>
       </section>
+      {page.sections.filter((section) => section.type !== "intake").map((section) => (
+        <PageSectionRenderer content={content} section={section} key={section.id} />
+      ))}
+      <SiteFooter content={content} />
     </main>
   );
 }

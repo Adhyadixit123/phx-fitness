@@ -1,5 +1,5 @@
 import ContactForm from "./ContactForm";
-import { EditablePage, PageSection, SiteContent } from "../lib/siteContent";
+import { EditablePage, PageHeroContent, PageSection, SiteContent } from "../lib/siteContent";
 
 export function SiteHeader({
   content,
@@ -91,20 +91,27 @@ export function PageHero({
   title,
   text,
   image,
-}: {
-  eyebrow: string;
-  title: string;
-  text: string;
-  image: string;
-}) {
+  video = "",
+  primaryButton = "Start My Intake",
+  primaryHref = "/get-started#intake",
+  secondaryButton = "",
+  secondaryHref = "",
+}: PageHeroContent) {
   return (
     <section className="pageHero">
-      <img src={image} alt="" />
+      {video ? (
+        <video src={video} poster={image} autoPlay muted loop playsInline />
+      ) : (
+        <img src={image} alt="" />
+      )}
       <div>
         <p>{eyebrow}</p>
         <h1>{title}</h1>
         <span>{text}</span>
-        <a className="primaryButton" href="/get-started#intake">Start My Intake</a>
+        <div className="pageHeroActions">
+          {primaryButton ? <a className="primaryButton" href={primaryHref || "/get-started#intake"}>{primaryButton}</a> : null}
+          {secondaryButton ? <a className="secondaryButton" href={secondaryHref || "#"}>{secondaryButton}</a> : null}
+        </div>
       </div>
     </section>
   );
@@ -115,21 +122,28 @@ export function SplitStory({
   title,
   text,
   image,
+  video = "",
+  buttonLabel = "",
+  buttonHref = "",
   reverse = false,
 }: {
   eyebrow: string;
   title: string;
   text: string;
   image: string;
+  video?: string;
+  buttonLabel?: string;
+  buttonHref?: string;
   reverse?: boolean;
 }) {
   return (
     <section className={`splitStory ${reverse ? "reverse" : ""}`}>
-      <img src={image} alt="" />
+      {video ? <video src={video} poster={image} controls playsInline /> : <img src={image} alt="" />}
       <div>
         <p>{eyebrow}</p>
         <h2>{title}</h2>
         <span>{text}</span>
+        {buttonLabel ? <a className="primaryButton sectionCta" href={buttonHref || "/get-started#intake"}>{buttonLabel}</a> : null}
       </div>
     </section>
   );
@@ -140,11 +154,15 @@ export function FeatureBand({
   title,
   text = "",
   items,
+  buttonLabel = "",
+  buttonHref = "",
 }: {
   eyebrow?: string;
   title: string;
   text?: string;
   items: { title: string; text?: string; image: string }[];
+  buttonLabel?: string;
+  buttonHref?: string;
 }) {
   return (
     <section className="featureBand">
@@ -156,12 +174,13 @@ export function FeatureBand({
       <div className="featureGrid">
         {items.map((item) => (
           <article key={item.title}>
-            <img src={item.image} alt="" />
+            {item.image ? <img src={item.image} alt="" /> : null}
             <h3>{item.title}</h3>
             <p>{item.text}</p>
           </article>
         ))}
       </div>
+      {buttonLabel ? <a className="primaryButton sectionCta centered" href={buttonHref || "/get-started#intake"}>{buttonLabel}</a> : null}
     </section>
   );
 }
@@ -174,6 +193,11 @@ export function ContentPage({ content, page }: { content: SiteContent; page: Edi
         title={page.hero.title}
         text={page.hero.text}
         image={page.hero.image}
+        video={page.hero.video}
+        primaryButton={page.hero.primaryButton}
+        primaryHref={page.hero.primaryHref}
+        secondaryButton={page.hero.secondaryButton}
+        secondaryHref={page.hero.secondaryHref}
       />
       {page.sections.map((section) => (
         <PageSectionRenderer content={content} section={section} key={section.id} />
@@ -191,25 +215,37 @@ export function PageSectionRenderer({ content, section }: { content: SiteContent
         title={section.title}
         text={section.text}
         image={section.image}
+        video={section.video}
+        buttonLabel={section.buttonLabel}
+        buttonHref={section.buttonHref}
         reverse={section.reverse}
       />
     );
   }
 
   if (section.type === "features") {
-    return <FeatureBand eyebrow={section.eyebrow} title={section.title} text={section.text} items={section.items || []} />;
+    return <FeatureBand eyebrow={section.eyebrow} title={section.title} text={section.text} items={section.items || []} buttonLabel={section.buttonLabel} buttonHref={section.buttonHref} />;
   }
 
   if (section.type === "process") {
     return (
       <section className="processTimeline">
-        {(section.items || []).map((item, index) => (
-          <article key={`${item.title}-${index}`}>
-            <span>{String(index + 1).padStart(2, "0")}</span>
-            <h3>{item.title}</h3>
-            <p>{item.text}</p>
-          </article>
-        ))}
+        <div className="sectionHeader">
+          <p>{section.eyebrow}</p>
+          <h2>{section.title}</h2>
+          {section.text ? <span>{section.text}</span> : null}
+        </div>
+        <div className="processGrid">
+          {(section.items || []).map((item, index) => (
+            <article key={`${item.title}-${index}`}>
+              {item.image ? <img src={item.image} alt="" /> : null}
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+            </article>
+          ))}
+        </div>
+        {section.buttonLabel ? <a className="primaryButton sectionCta centered" href={section.buttonHref || "/get-started#intake"}>{section.buttonLabel}</a> : null}
       </section>
     );
   }
@@ -217,6 +253,11 @@ export function PageSectionRenderer({ content, section }: { content: SiteContent
   if (section.type === "trainers") {
     return (
       <section className="trainerDetailGrid">
+        <div className="sectionHeader">
+          <p>{section.eyebrow}</p>
+          <h2>{section.title}</h2>
+          {section.text ? <span>{section.text}</span> : null}
+        </div>
         {content.trainers.items.map((trainer) => (
           <article key={trainer.name}>
             <img src={trainer.image} alt={trainer.name} />
@@ -227,6 +268,7 @@ export function PageSectionRenderer({ content, section }: { content: SiteContent
             </div>
           </article>
         ))}
+        {section.buttonLabel ? <a className="primaryButton sectionCta centered" href={section.buttonHref || "/get-started#intake"}>{section.buttonLabel}</a> : null}
       </section>
     );
   }
@@ -238,6 +280,7 @@ export function PageSectionRenderer({ content, section }: { content: SiteContent
           <p>{section.eyebrow}</p>
           <h2>{section.title}</h2>
           <span>{section.text}</span>
+          {section.buttonLabel ? <a className="primaryButton sectionCta" href={section.buttonHref || "/get-started#intake"}>{section.buttonLabel}</a> : null}
         </div>
         <ContactForm buttonLabel="Send My Intake" successMessage={content.contact.success} />
       </section>

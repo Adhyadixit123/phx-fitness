@@ -69,6 +69,10 @@ function updateAt<T>(items: T[], index: number, value: T) {
   return items.map((item, itemIndex) => (itemIndex === index ? value : item));
 }
 
+function isVideoUrl(value: string) {
+  return /\.(mp4|mov|webm|m4v)(\?|#|$)/i.test(value);
+}
+
 export default function AdminPage() {
   const [admin, setAdmin] = useState<{ email: string } | null>(null);
   const [login, setLogin] = useState({ email: "", password: "" });
@@ -689,6 +693,8 @@ function PreviewCard({ item }: { item: { title: string; text?: string; image: st
 
 function EditablePagePreview({ content, pageKey }: { content: SiteContent; pageKey: PageKey }) {
   const page = content.pages[pageKey];
+  const primaryButton = page.hero.primaryButton || "Start My Intake";
+  const primaryHref = page.hero.primaryHref || "/get-started#intake";
 
   return (
     <div className="sitePreviewFrame">
@@ -696,12 +702,19 @@ function EditablePagePreview({ content, pageKey }: { content: SiteContent; pageK
         <div className="previewSection active">
           <span className="previewTag">Hero</span>
           <section className="pageHero">
-            <img src={page.hero.image} alt="" />
+            {page.hero.video ? (
+              <video src={page.hero.video} poster={page.hero.image} autoPlay muted loop playsInline />
+            ) : (
+              <img src={page.hero.image} alt="" />
+            )}
             <div>
               <p>{page.hero.eyebrow}</p>
               <h1>{page.hero.title}</h1>
               <span>{page.hero.text}</span>
-              <a className="primaryButton" href="/get-started#intake">Start My Intake</a>
+              <div className="pageHeroActions">
+                {primaryButton ? <a className="primaryButton" href={primaryHref}>{primaryButton}</a> : null}
+                {page.hero.secondaryButton ? <a className="secondaryButton" href={page.hero.secondaryHref || "#"}>{page.hero.secondaryButton}</a> : null}
+              </div>
             </div>
           </section>
         </div>
@@ -720,11 +733,12 @@ function PageSectionPreview({ content, section }: { content: SiteContent; sectio
   if (section.type === "split") {
     return (
       <section className={`splitStory ${section.reverse ? "reverse" : ""}`}>
-        <img src={section.image} alt="" />
+        {section.video ? <video src={section.video} poster={section.image} controls playsInline /> : <img src={section.image} alt="" />}
         <div>
           <p>{section.eyebrow}</p>
           <h2>{section.title}</h2>
           <span>{section.text}</span>
+          {section.buttonLabel ? <a className="primaryButton sectionCta" href={section.buttonHref || "/get-started#intake"}>{section.buttonLabel}</a> : null}
         </div>
       </section>
     );
@@ -741,12 +755,13 @@ function PageSectionPreview({ content, section }: { content: SiteContent; sectio
         <div className="featureGrid">
           {(section.items || []).map((item) => (
             <article key={item.title}>
-              <img src={item.image} alt="" />
+              {item.image ? <img src={item.image} alt="" /> : null}
               <h3>{item.title}</h3>
               <p>{item.text}</p>
             </article>
           ))}
         </div>
+        {section.buttonLabel ? <a className="primaryButton sectionCta centered" href={section.buttonHref || "/get-started#intake"}>{section.buttonLabel}</a> : null}
       </section>
     );
   }
@@ -759,13 +774,17 @@ function PageSectionPreview({ content, section }: { content: SiteContent; sectio
           <h2>{section.title}</h2>
           {section.text ? <span>{section.text}</span> : null}
         </div>
-        {(section.items || []).map((item, index) => (
-          <article key={`${item.title}-${index}`}>
-            <span>{String(index + 1).padStart(2, "0")}</span>
-            <h3>{item.title}</h3>
-            <p>{item.text}</p>
-          </article>
-        ))}
+        <div className="processGrid">
+          {(section.items || []).map((item, index) => (
+            <article key={`${item.title}-${index}`}>
+              {item.image ? <img src={item.image} alt="" /> : null}
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+            </article>
+          ))}
+        </div>
+        {section.buttonLabel ? <a className="primaryButton sectionCta centered" href={section.buttonHref || "/get-started#intake"}>{section.buttonLabel}</a> : null}
       </section>
     );
   }
@@ -788,6 +807,7 @@ function PageSectionPreview({ content, section }: { content: SiteContent; sectio
             </div>
           </article>
         ))}
+        {section.buttonLabel ? <a className="primaryButton sectionCta centered" href={section.buttonHref || "/get-started#intake"}>{section.buttonLabel}</a> : null}
       </section>
     );
   }
@@ -799,6 +819,7 @@ function PageSectionPreview({ content, section }: { content: SiteContent; sectio
           <p>{section.eyebrow}</p>
           <h2>{section.title}</h2>
           <span>{section.text}</span>
+          {section.buttonLabel ? <a className="primaryButton sectionCta" href={section.buttonHref || "/get-started#intake"}>{section.buttonLabel}</a> : null}
         </div>
       </section>
     );
@@ -1126,6 +1147,11 @@ function PageSettings({
         <TextInput label="Title" value={page.hero.title} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, title: value } }))} />
         <TextArea label="Text" value={page.hero.text} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, text: value } }))} />
         <UploadInput label="Hero image" value={page.hero.image} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, image: value } }))} onUpload={uploadImage} />
+        <UploadInput label="Hero video URL" value={page.hero.video || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, video: value } }))} onUpload={uploadImage} />
+        <TextInput label="Primary button" value={page.hero.primaryButton || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, primaryButton: value } }))} />
+        <TextInput label="Primary button link" value={page.hero.primaryHref || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, primaryHref: value } }))} />
+        <TextInput label="Secondary button" value={page.hero.secondaryButton || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, secondaryButton: value } }))} />
+        <TextInput label="Secondary button link" value={page.hero.secondaryHref || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, secondaryHref: value } }))} />
       </section>
 
       <section className="editorRepeater">
@@ -1175,6 +1201,9 @@ function PageSettings({
             {section.type === "split" || section.type === "intake" ? (
               <UploadInput label="Section image" value={section.image} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, index, { ...section, image: value }) }))} onUpload={uploadImage} />
             ) : null}
+            <UploadInput label="Section video URL" value={section.video || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, index, { ...section, video: value }) }))} onUpload={uploadImage} />
+            <TextInput label="Button label" value={section.buttonLabel || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, index, { ...section, buttonLabel: value }) }))} />
+            <TextInput label="Button link" value={section.buttonHref || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, index, { ...section, buttonHref: value }) }))} />
             {section.type === "split" ? (
               <>
                 <label className="toggleField">
@@ -1192,7 +1221,7 @@ function PageSettings({
                 items={section.items || []}
                 onChange={(items) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, index, { ...section, items }) }))}
                 uploadImage={uploadImage}
-                showImages={section.type === "features"}
+                showImages
               />
             ) : null}
           </>
@@ -1427,7 +1456,8 @@ function UploadInput({
   return (
     <div className="adminUpload">
       <TextInput label={label} value={value} onChange={onChange} />
-      {value ? <img src={value} alt="" /> : null}
+      {value && isVideoUrl(value) ? <video src={value} controls playsInline /> : null}
+      {value && !isVideoUrl(value) ? <img src={value} alt="" /> : null}
       <input
         aria-label={`Upload ${label}`}
         type="file"

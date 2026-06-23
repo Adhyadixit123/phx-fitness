@@ -38,19 +38,29 @@ export type PageSection = {
   title: string;
   text: string;
   image: string;
+  video?: string;
+  buttonLabel?: string;
+  buttonHref?: string;
   reverse?: boolean;
   items?: ImageTextItem[];
+};
+
+export type PageHeroContent = {
+  eyebrow: string;
+  title: string;
+  text: string;
+  image: string;
+  video?: string;
+  primaryButton?: string;
+  primaryHref?: string;
+  secondaryButton?: string;
+  secondaryHref?: string;
 };
 
 export type EditablePage = {
   navLabel: string;
   path: string;
-  hero: {
-    eyebrow: string;
-    title: string;
-    text: string;
-    image: string;
-  };
+  hero: PageHeroContent;
   sections: PageSection[];
 };
 
