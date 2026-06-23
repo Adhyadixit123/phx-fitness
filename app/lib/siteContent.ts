@@ -125,7 +125,7 @@ export type SiteContent = {
 };
 
 const figmaAssets = {
-  logo: "https://www.figma.com/api/mcp/asset/9b6a9821-1429-46a9-a9b7-6f6f52b996aa",
+  logo: "/phoenix-logo.svg",
   hero: "https://www.figma.com/api/mcp/asset/9a09243b-7608-41ea-a49c-82d93c843ccd",
   why1: "https://www.figma.com/api/mcp/asset/961500da-0ead-4871-beed-12161040ecdd",
   why2: "https://www.figma.com/api/mcp/asset/6a7948ab-728e-4a4b-a15f-7be7db1f16a5",
