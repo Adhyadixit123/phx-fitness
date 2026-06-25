@@ -2,6 +2,15 @@ import { getSiteContent } from "./lib/db";
 
 export const dynamic = "force-dynamic";
 
+function shopifyImage(src: string, width: number) {
+  if (!src.includes("cdn.shopify.com") || !src.includes("/files/")) {
+    return src;
+  }
+
+  const separator = src.includes("?") ? "&" : "?";
+  return `${src}${separator}width=${width}`;
+}
+
 export default async function Home() {
   const content = await getSiteContent();
   const footerLinks = [
@@ -16,7 +25,7 @@ export default async function Home() {
     <main>
       <section className="hero" id="home">
         <div className="heroImage" aria-hidden="true">
-          <video autoPlay loop muted playsInline poster={content.assets.heroPoster}>
+          <video autoPlay loop muted playsInline preload="auto">
             <source src={content.assets.heroVideo} type="video/mp4" />
           </video>
         </div>
@@ -57,7 +66,7 @@ export default async function Home() {
         <div className="problemGrid">
           {content.problems.items.map((item) => (
             <article className="imageCard" key={item.title}>
-              <img src={item.image} alt="" />
+              <img src={shopifyImage(item.image, 760)} alt="" loading="lazy" decoding="async" />
               <div>
                 <h3>{item.title}</h3>
                 <p>{item.text}</p>
@@ -75,7 +84,7 @@ export default async function Home() {
         <div className="stepGrid">
           {content.steps.items.map((item, index) => (
             <article className="stepCard" key={item.title}>
-              <img src={item.image} alt="" />
+              <img src={shopifyImage(item.image, 760)} alt="" loading="lazy" decoding="async" />
               <span>{String(index + 1).padStart(2, "0")}</span>
               <h3>{item.title}</h3>
               <p>{item.text}</p>
@@ -93,7 +102,7 @@ export default async function Home() {
         <div className="differenceGrid">
           {content.difference.items.map((item) => (
             <article key={item.title}>
-              <img src={item.image} alt="" />
+              <img src={shopifyImage(item.image, 720)} alt="" loading="lazy" decoding="async" />
               <h3>{item.title}</h3>
             </article>
           ))}
@@ -108,7 +117,7 @@ export default async function Home() {
         <div className="trainerGrid">
           {content.trainers.items.map((trainer) => (
             <article className="trainerCard" key={trainer.name}>
-              <img src={trainer.image} alt={trainer.name} />
+              <img src={shopifyImage(trainer.image, 720)} alt={trainer.name} loading="lazy" decoding="async" />
               <h3>{trainer.name}</h3>
               <p>{trainer.role}</p>
             </article>
@@ -143,7 +152,7 @@ export default async function Home() {
 
       <footer className="footer">
         <div>
-          <img src={content.assets.logo} alt="Phoenix Fitness" />
+          <img src={shopifyImage(content.assets.logo, 260)} alt="Phoenix Fitness" />
           <p>{content.business.footerName}</p>
           <a className="primaryButton" href="/get-started#intake">Start My Intake</a>
         </div>

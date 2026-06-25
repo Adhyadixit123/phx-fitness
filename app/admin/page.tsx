@@ -537,7 +537,7 @@ function SitePreview({
               </div>
             </nav>
             <div className="heroImage">
-              <video autoPlay loop muted playsInline poster={content.assets.heroPoster}>
+              <video autoPlay loop muted playsInline preload="auto">
                 <source src={content.assets.heroVideo} type="video/mp4" />
               </video>
             </div>
@@ -908,7 +908,6 @@ function SettingsPanel({
       {activeSection === "media" ? (
         <>
           <UploadInput label="Logo" value={content.assets.logo} onChange={(value) => updateContent((current) => ({ ...current, assets: { ...current.assets, logo: value } }))} onUpload={uploadImage} />
-          <UploadInput label="Hero poster" value={content.assets.heroPoster} onChange={(value) => updateContent((current) => ({ ...current, assets: { ...current.assets, heroPoster: value } }))} onUpload={uploadImage} />
           <UploadInput label="Hero video URL" value={content.assets.heroVideo} onChange={(value) => updateContent((current) => ({ ...current, assets: { ...current.assets, heroVideo: value } }))} onUpload={uploadImage} />
           <UploadInput label="Contact image" value={content.assets.contact} onChange={(value) => updateContent((current) => ({ ...current, assets: { ...current.assets, contact: value } }))} onUpload={uploadImage} />
         </>
