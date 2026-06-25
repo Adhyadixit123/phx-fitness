@@ -21,6 +21,22 @@ type Lead = {
 const cloudName = "dd9j6cxtw";
 const uploadPreset = "ml_default";
 
+const defaultCdnImages = {
+  card: "https://cdn.shopify.com/s/files/1/0983/2811/7529/files/DSC01537.jpg?v=1782328742",
+  trainer: "https://cdn.shopify.com/s/files/1/0983/2811/7529/files/DSC01550.jpg?v=1782328742",
+  feature: "https://cdn.shopify.com/s/files/1/0983/2811/7529/files/DSC01652.jpg?v=1782328734",
+  process: "https://cdn.shopify.com/s/files/1/0983/2811/7529/files/DSC01679.jpg?v=1782328742",
+  split: "https://cdn.shopify.com/s/files/1/0983/2811/7529/files/DSC01537.jpg?v=1782328742",
+  intake: "https://cdn.shopify.com/s/files/1/0983/2811/7529/files/DSC01652.jpg?v=1782328734",
+};
+
+function defaultSectionImage(type: PageSection["type"]) {
+  if (type === "process") return defaultCdnImages.process;
+  if (type === "features") return defaultCdnImages.feature;
+  if (type === "intake") return defaultCdnImages.intake;
+  return defaultCdnImages.split;
+}
+
 const sections: { key: SectionKey; label: string; hint: string }[] = [
   { key: "business", label: "Business", hint: "Phone, address, footer name" },
   { key: "hero", label: "Hero", hint: "Headline, badges, buttons" },
@@ -948,7 +964,7 @@ function SettingsPanel({
           <Repeater
             title="Trainers"
             items={content.trainers.items}
-            onAdd={() => updateContent((current) => ({ ...current, trainers: { ...current.trainers, items: [...current.trainers.items, { name: "New Trainer", role: "Personal Trainer", image: "" }] } }))}
+            onAdd={() => updateContent((current) => ({ ...current, trainers: { ...current.trainers, items: [...current.trainers.items, { name: "New Trainer", role: "Personal Trainer", image: defaultCdnImages.trainer }] } }))}
             onRemove={(index) => updateContent((current) => ({ ...current, trainers: { ...current.trainers, items: current.trainers.items.filter((_, itemIndex) => itemIndex !== index) } }))}
             render={(item, index) => (
               <>
@@ -1041,7 +1057,7 @@ function ImageTextSettings({
       <Repeater
         title="Cards"
         items={items}
-        onAdd={() => onItemsChange([...items, { title: "New Card", text: "", image: "" }])}
+        onAdd={() => onItemsChange([...items, { title: "New Card", text: "", image: defaultCdnImages.card }])}
         onRemove={(index) => onItemsChange(items.filter((_, itemIndex) => itemIndex !== index))}
         render={(item, index) => (
           <>
@@ -1085,9 +1101,9 @@ function PageSettings({
       eyebrow: type === "features" ? "Phoenix Fitness" : "New Section",
       title: type === "intake" ? "Build your starting point" : "New section title",
       text: type === "intake" ? "Use this intake to help your trainer understand your goals." : "Section text goes here.",
-      image: "",
+      image: defaultSectionImage(type),
       items: type === "features" || type === "process"
-        ? [{ title: "New item", text: "Item text goes here.", image: "" }]
+        ? [{ title: "New item", text: "Item text goes here.", image: defaultSectionImage(type) }]
         : undefined,
     };
 
@@ -1249,7 +1265,7 @@ function ImageTextRepeaterInline({
       title="Items"
       items={safeItems}
       getLabel={(item, index) => `${index + 1}. ${item.title}`}
-      onAdd={() => onChange([...safeItems, { title: "New item", text: "Item text.", image: "" }])}
+      onAdd={() => onChange([...safeItems, { title: "New item", text: "Item text.", image: defaultCdnImages.card }])}
       onRemove={(index) => onChange(safeItems.filter((_, itemIndex) => itemIndex !== index))}
       render={(item, index) => (
         <>

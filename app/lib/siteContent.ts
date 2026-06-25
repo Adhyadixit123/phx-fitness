@@ -336,7 +336,7 @@ export const defaultSiteContent: SiteContent = {
           eyebrow: "Phoenix Fitness",
           title: "What makes the studio different",
           text: "",
-          image: "",
+          image: gymAssets.facilityWide,
           items: [
             { title: "Private coaching", text: "Your session is centered on you, your form, and your progress.", image: gymAssets.coachingConversation },
             { title: "Complete equipment", text: "Strength machines, free weights, cables, bands, cardio, and open mat space.", image: gymAssets.facilityWide },
@@ -357,7 +357,7 @@ export const defaultSiteContent: SiteContent = {
           eyebrow: "Location",
           title: "A local studio clients can actually recognize",
           text: "",
-          image: "",
+          image: gymAssets.exteriorSign,
           items: [
             { title: "Street-visible sign", text: "The exterior sign is useful for location confidence and helps visitors know they are in the right place.", image: gymAssets.exteriorSign },
             { title: "Front-door view", text: "The storefront entrance works well for directions, contact sections, and first-visit reassurance.", image: gymAssets.exteriorDoor },
@@ -391,12 +391,12 @@ export const defaultSiteContent: SiteContent = {
           eyebrow: "Process",
           title: "How personal training works",
           text: "",
-          image: "",
+          image: gymAssets.coachingWide,
           items: [
-            { title: "Intake", text: "Tell us your goals, training history, injuries, schedule, nutrition needs, and what has made consistency hard.", image: "" },
-            { title: "Plan", text: "Your trainer turns that context into a practical first plan with the right starting point.", image: "" },
-            { title: "Coach", text: "Each session is coached in real time, with form corrections and progressions.", image: "" },
-            { title: "Adjust", text: "Your plan changes as your body, schedule, and confidence change.", image: "" },
+            { title: "Intake", text: "Tell us your goals, training history, injuries, schedule, nutrition needs, and what has made consistency hard.", image: gymAssets.coachingConversation },
+            { title: "Plan", text: "Your trainer turns that context into a practical first plan with the right starting point.", image: gymAssets.coachingObserve },
+            { title: "Coach", text: "Each session is coached in real time, with form corrections and progressions.", image: gymAssets.clientCable },
+            { title: "Adjust", text: "Your plan changes as your body, schedule, and confidence change.", image: gymAssets.coachingAction },
           ],
         },
         {
@@ -413,7 +413,7 @@ export const defaultSiteContent: SiteContent = {
           eyebrow: "Phoenix Fitness",
           title: "Training can support",
           text: "",
-          image: "",
+          image: gymAssets.clientCable,
           items: [
             { title: "Fat loss and strength", text: "Build a routine that combines resistance training, cardio, and realistic habits.", image: gymAssets.barbell },
             { title: "Confidence with equipment", text: "Learn how to use machines, dumbbells, cables, and bands safely.", image: gymAssets.cableMachine },
@@ -435,7 +435,7 @@ export const defaultSiteContent: SiteContent = {
           eyebrow: "Coaching Moments",
           title: "What one-on-one coaching looks like",
           text: "",
-          image: "",
+          image: gymAssets.coachingClient,
           items: [
             { title: "Watch form closely", text: "The trainer observes how the client moves and adjusts the exercise in real time.", image: gymAssets.coachingClient },
             { title: "Coach the setup", text: "Cable work, grips, stance, tempo, and posture can all be coached moment by moment.", image: gymAssets.clientCable },
@@ -448,12 +448,12 @@ export const defaultSiteContent: SiteContent = {
           eyebrow: "Progress",
           title: "How a plan becomes progress",
           text: "",
-          image: "",
+          image: gymAssets.trainerWide,
           items: [
-            { title: "Set the baseline", text: "Start with the client’s current strength, mobility, schedule, and confidence.", image: "" },
-            { title: "Choose the right tools", text: "Use cables, machines, free weights, bands, cardio, or mat work based on the goal.", image: "" },
-            { title: "Track what changes", text: "Progress can mean strength, consistency, energy, pain-free movement, or body composition.", image: "" },
-            { title: "Adjust the next block", text: "The plan changes as the client becomes stronger and more capable.", image: "" },
+            { title: "Set the baseline", text: "Start with the client’s current strength, mobility, schedule, and confidence.", image: gymAssets.coachingConversation },
+            { title: "Choose the right tools", text: "Use cables, machines, free weights, bands, cardio, or mat work based on the goal.", image: gymAssets.cableMachine },
+            { title: "Track what changes", text: "Progress can mean strength, consistency, energy, pain-free movement, or body composition.", image: gymAssets.dumbbellRack },
+            { title: "Adjust the next block", text: "The plan changes as the client becomes stronger and more capable.", image: gymAssets.coachingClose },
           ],
         },
         {
@@ -462,7 +462,7 @@ export const defaultSiteContent: SiteContent = {
           eyebrow: "Training Tools",
           title: "The equipment supports many training styles",
           text: "",
-          image: "",
+          image: gymAssets.cableMachine,
           items: [
             { title: "Cable training", text: "Great for guided strength, controlled movement, and coaching form.", image: gymAssets.cableMachine },
             { title: "Free weights", text: "Dumbbells and barbells help build strength that carries into daily life.", image: gymAssets.dumbbells },
@@ -487,7 +487,7 @@ export const defaultSiteContent: SiteContent = {
           eyebrow: "Phoenix Fitness",
           title: "Inside the training floor",
           text: "",
-          image: "",
+          image: gymAssets.facilityWide,
           items: [
             { title: "Strength machines", text: "Guided resistance equipment for safe, controlled progress.", image: gymAssets.strengthMachines },
             { title: "Free weights", text: "Dumbbells and kettlebells for strength, balance, and full-body work.", image: gymAssets.dumbbells },
@@ -517,7 +517,7 @@ export const defaultSiteContent: SiteContent = {
           eyebrow: "Equipment",
           title: "Strength, conditioning, and support tools",
           text: "",
-          image: "",
+          image: gymAssets.dumbbellRack,
           items: [
             { title: "Cable and machine work", text: "Machine and cable setups support safe progressions and clear coaching cues.", image: gymAssets.hoistDetail },
             { title: "Dumbbells and kettlebells", text: "Organized free weights support strength, balance, and full-body training.", image: gymAssets.kettlebells },
@@ -538,7 +538,7 @@ export const defaultSiteContent: SiteContent = {
           eyebrow: "Tour",
           title: "What clients can expect inside",
           text: "",
-          image: "",
+          image: gymAssets.facilityOpen,
           items: [
             { title: "Full training floor", text: "A broad look at the main gym space with machines, benches, and mats.", image: gymAssets.facilityOpen },
             { title: "Cardio options", text: "Cardio equipment is available for conditioning and warmups.", image: gymAssets.cardio },
@@ -572,7 +572,7 @@ export const defaultSiteContent: SiteContent = {
           eyebrow: "Certified Trainers",
           title: "Meet your coaches",
           text: "",
-          image: "",
+          image: gymAssets.trainerProfile,
         },
         {
           id: "coaching-style",
@@ -588,7 +588,7 @@ export const defaultSiteContent: SiteContent = {
           eyebrow: "Method",
           title: "How trainers support each session",
           text: "",
-          image: "",
+          image: gymAssets.trainerDemo,
           items: [
             { title: "Demonstrate clearly", text: "Trainer demonstration photos show how clients can see the movement before trying it.", image: gymAssets.trainerDemo },
             { title: "Coach with attention", text: "Close trainer-client images show the trainer watching form and effort.", image: gymAssets.coachingObserve },
@@ -610,12 +610,12 @@ export const defaultSiteContent: SiteContent = {
           eyebrow: "Session Flow",
           title: "The trainer-client rhythm",
           text: "",
-          image: "",
+          image: gymAssets.coachingConversation,
           items: [
-            { title: "Check in", text: "Review energy, soreness, schedule, and what happened since the last session.", image: "" },
-            { title: "Warm up", text: "Prepare the body for the work planned that day.", image: "" },
-            { title: "Train", text: "Move through coached exercises with form feedback and appropriate challenge.", image: "" },
-            { title: "Leave with clarity", text: "Know what improved, what to practice, and what comes next.", image: "" },
+            { title: "Check in", text: "Review energy, soreness, schedule, and what happened since the last session.", image: gymAssets.coachingConversation },
+            { title: "Warm up", text: "Prepare the body for the work planned that day.", image: gymAssets.bands },
+            { title: "Train", text: "Move through coached exercises with form feedback and appropriate challenge.", image: gymAssets.clientCable },
+            { title: "Leave with clarity", text: "Know what improved, what to practice, and what comes next.", image: gymAssets.coachingClose },
           ],
         },
         {
@@ -624,7 +624,7 @@ export const defaultSiteContent: SiteContent = {
           eyebrow: "Action",
           title: "Training is active, observed, and personal",
           text: "",
-          image: "",
+          image: gymAssets.trainerWide,
           items: [
             { title: "Full-body coaching", text: "Wide action shots show the trainer working in the real studio environment.", image: gymAssets.trainerWide },
             { title: "Technique focus", text: "Mid-shot trainer photos work well for technique and expertise messaging.", image: gymAssets.trainerProfile },
@@ -657,7 +657,7 @@ export const defaultSiteContent: SiteContent = {
           eyebrow: "What We Ask",
           title: "The form is detailed because the plan should not be generic",
           text: "",
-          image: "",
+          image: gymAssets.coachingConversation,
           items: [
             { title: "Goals and motivation", text: "Tell us what you want to change and why it matters now.", image: gymAssets.coachingConversation },
             { title: "History and limitations", text: "Past training, injuries, pain, surgeries, and movement limitations shape the starting point.", image: gymAssets.coachingObserve },
@@ -670,12 +670,12 @@ export const defaultSiteContent: SiteContent = {
           eyebrow: "Next Steps",
           title: "After you submit the intake",
           text: "",
-          image: "",
+          image: gymAssets.brandCards,
           items: [
-            { title: "We review your answers", text: "Your trainer looks at goals, history, availability, and health notes before reaching out.", image: "" },
-            { title: "We clarify the plan", text: "You can ask questions and talk through the right training schedule.", image: "" },
-            { title: "You book the first session", text: "Your first session starts with a clearer picture of what you need.", image: "" },
-            { title: "Training begins", text: "The plan can evolve as your trainer learns how you move and recover.", image: "" },
+            { title: "We review your answers", text: "Your trainer looks at goals, history, availability, and health notes before reaching out.", image: gymAssets.brandCards },
+            { title: "We clarify the plan", text: "You can ask questions and talk through the right training schedule.", image: gymAssets.coachingConversation },
+            { title: "You book the first session", text: "Your first session starts with a clearer picture of what you need.", image: gymAssets.exteriorDoor },
+            { title: "Training begins", text: "The plan can evolve as your trainer learns how you move and recover.", image: gymAssets.clientCable },
           ],
         },
         {
@@ -684,7 +684,7 @@ export const defaultSiteContent: SiteContent = {
           eyebrow: "Training Intake",
           title: "Build your starting point",
           text: "Answer what you can. We ask about goals, training history, injuries, availability, nutrition, supplements, and motivation so your first conversation is useful instead of generic.",
-          image: "",
+          image: gymAssets.coachingConversation,
         },
       ],
     },
