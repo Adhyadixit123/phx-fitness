@@ -134,7 +134,7 @@ export type SiteContent = {
   pages: Record<PageKey, EditablePage>;
 };
 
-const figmaAssets = {
+const shopifyHomeAssets = {
   logo: "/phoenix-logo.svg",
   hero: "https://cdn.shopify.com/s/files/1/0983/2811/7529/files/DSC01371.jpg?v=1782328742",
   why1: "https://cdn.shopify.com/s/files/1/0983/2811/7529/files/DSC01466.jpg?v=1782328741",
@@ -197,10 +197,10 @@ const shopifyVideo = "https://cdn.shopify.com/videos/c/o/v/50802481d7564557a6be9
 
 export const defaultSiteContent: SiteContent = {
   assets: {
-    logo: figmaAssets.logo,
-    heroPoster: figmaAssets.hero,
+    logo: shopifyHomeAssets.logo,
+    heroPoster: shopifyHomeAssets.hero,
     heroVideo: shopifyVideo,
-    contact: figmaAssets.contact,
+    contact: shopifyHomeAssets.contact,
   },
   business: {
     phone: "(732)545-0100",
@@ -230,9 +230,9 @@ export const defaultSiteContent: SiteContent = {
     eyebrow: "Why Your Training Isn't",
     title: "Working",
     items: [
-      { title: "No Plan", text: "Random workouts rarely create lasting change.", image: figmaAssets.why1 },
-      { title: "No Accountability", text: "You need coaching that keeps pace with real life.", image: figmaAssets.why2 },
-      { title: "No Personal Fit", text: "Templates miss your body, schedule, and goals.", image: figmaAssets.why3 },
+      { title: "No Plan", text: "Random workouts rarely create lasting change.", image: shopifyHomeAssets.why1 },
+      { title: "No Accountability", text: "You need coaching that keeps pace with real life.", image: shopifyHomeAssets.why2 },
+      { title: "No Personal Fit", text: "Templates miss your body, schedule, and goals.", image: shopifyHomeAssets.why3 },
     ],
   },
   steps: {
@@ -240,27 +240,27 @@ export const defaultSiteContent: SiteContent = {
     title: "3 Steps",
     button: "Book My Free Session",
     items: [
-      { title: "Book Your Welcome Session", text: "Meet your trainer, talk goals, and get a clear starting point.", image: figmaAssets.start1 },
-      { title: "Build Your Plan", text: "Your program is shaped around your body, schedule, and experience.", image: figmaAssets.start2 },
-      { title: "Train 1-on-1", text: "Every session is private, coached, and adjusted as you improve.", image: figmaAssets.start3 },
+      { title: "Book Your Welcome Session", text: "Meet your trainer, talk goals, and get a clear starting point.", image: shopifyHomeAssets.start1 },
+      { title: "Build Your Plan", text: "Your program is shaped around your body, schedule, and experience.", image: shopifyHomeAssets.start2 },
+      { title: "Train 1-on-1", text: "Every session is private, coached, and adjusted as you improve.", image: shopifyHomeAssets.start3 },
     ],
   },
   difference: {
     eyebrow: "The Phoenix",
     title: "Difference",
     items: [
-      { title: "Private 1-on-1 Coaching", image: figmaAssets.difference1 },
-      { title: "Expert Guidance", image: figmaAssets.difference2 },
-      { title: "Progress Without Guesswork", image: figmaAssets.difference3 },
+      { title: "Private 1-on-1 Coaching", image: shopifyHomeAssets.difference1 },
+      { title: "Expert Guidance", image: shopifyHomeAssets.difference2 },
+      { title: "Progress Without Guesswork", image: shopifyHomeAssets.difference3 },
     ],
   },
   trainers: {
     eyebrow: "Meet Your",
     title: "Certified Trainers",
     items: [
-      { name: "Rob Ruggieri", role: "Owner, Personal Trainer", image: figmaAssets.trainer1 },
-      { name: "Amy Weber", role: "Personal Trainer", image: figmaAssets.trainer2 },
-      { name: "Ben Ruggieri", role: "Personal Trainer", image: figmaAssets.trainer3 },
+      { name: "Rob Ruggieri", role: "Owner, Personal Trainer", image: shopifyHomeAssets.trainer1 },
+      { name: "Amy Weber", role: "Personal Trainer", image: shopifyHomeAssets.trainer2 },
+      { name: "Ben Ruggieri", role: "Personal Trainer", image: shopifyHomeAssets.trainer3 },
     ],
   },
   benefits: [
