@@ -135,7 +135,7 @@ export type SiteContent = {
 };
 
 const shopifyHomeAssets = {
-  logo: "/phoenix-logo.svg",
+  logo: "/phoenix-logo-white.png",
   hero: "https://cdn.shopify.com/s/files/1/0983/2811/7529/files/DSC01371.jpg?v=1782328742",
   why1: "https://cdn.shopify.com/s/files/1/0983/2811/7529/files/DSC01466.jpg?v=1782328741",
   why2: "https://cdn.shopify.com/s/files/1/0983/2811/7529/files/DSC01656.jpg?v=1782328738",
