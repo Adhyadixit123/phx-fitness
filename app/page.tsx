@@ -154,7 +154,7 @@ export default async function Home() {
         <div>
           <img src={shopifyImage(content.assets.logo, 260)} alt="Phoenix Fitness" />
           <p>{content.business.footerName}</p>
-          <a className="primaryButton" href="/get-started#intake">Start My Intake</a>
+          <a className="primaryButton" href={content.menuButton.href}>{content.menuButton.label}</a>
         </div>
         <div>
           <h3>Important Links</h3>

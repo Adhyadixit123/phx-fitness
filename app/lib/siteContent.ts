@@ -79,6 +79,7 @@ export type SiteContent = {
     footerName: string;
   };
   nav: NavLink[];
+  menuButton: NavLink;
   hero: {
     title: string;
     accent: string;
@@ -213,6 +214,7 @@ export const defaultSiteContent: SiteContent = {
     { label: "Trainers", href: "#trainers" },
     { label: "Why Personal Training", href: "#why" },
   ],
+  menuButton: { label: "Start Intake", href: "/get-started#intake" },
   hero: {
     title: "Train Smarter. One Trainer.",
     accent: "Only You.",
@@ -725,6 +727,7 @@ export function mergeSiteContent(content?: Partial<SiteContent> | null): SiteCon
     ...content,
     assets: { ...defaultSiteContent.assets, ...content?.assets },
     business: { ...defaultSiteContent.business, ...content?.business },
+    menuButton: { ...defaultSiteContent.menuButton, ...content?.menuButton },
     hero: { ...defaultSiteContent.hero, ...content?.hero },
     problems: { ...defaultSiteContent.problems, ...content?.problems },
     steps: { ...defaultSiteContent.steps, ...content?.steps },

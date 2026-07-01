@@ -81,6 +81,32 @@ const mainTabs: { key: Mode; label: string; hint: string }[] = [
   { key: "settings", label: "Settings", hint: "Admin account" },
 ];
 
+type EditorPageKey = "home" | PageKey;
+
+function pageLabel(content: SiteContent, pageKey: EditorPageKey) {
+  return pageKey === "home" ? "Homepage" : content.pages[pageKey].navLabel;
+}
+
+function pagePath(content: SiteContent, pageKey: EditorPageKey) {
+  return pageKey === "home" ? "/" : content.pages[pageKey].path;
+}
+
+function pageSectionTargets(content: SiteContent, pageKey: EditorPageKey) {
+  if (pageKey === "home") {
+    return sections;
+  }
+
+  return [
+    { key: "hero", label: "Hero", hint: "Page headline, media, buttons" },
+    { key: "nav", label: "Menus", hint: "Header links, CTA, footer links" },
+    ...content.pages[pageKey].sections.map((section, index) => ({
+      key: section.id,
+      label: section.title || `Section ${index + 1}`,
+      hint: `${section.type} section`,
+    })),
+  ];
+}
+
 function updateAt<T>(items: T[], index: number, value: T) {
   return items.map((item, itemIndex) => (itemIndex === index ? value : item));
 }
@@ -94,6 +120,9 @@ export default function AdminPage() {
   const [login, setLogin] = useState({ email: "", password: "" });
   const [content, setContent] = useState<SiteContent>(defaultSiteContent);
   const [activeSection, setActiveSection] = useState<SectionKey>("hero");
+  const [activeEditorPage, setActiveEditorPage] = useState<EditorPageKey>("home");
+  const [activePageSection, setActivePageSection] = useState<SectionKey>("hero");
+  const [editorPanelCollapsed, setEditorPanelCollapsed] = useState(false);
   const [mode, setMode] = useState<Mode>("editor");
   const [leads, setLeads] = useState<Lead[]>([]);
   const [passwords, setPasswords] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
@@ -295,7 +324,7 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="visualAdmin">
+    <main className={`visualAdmin ${mode === "editor" ? "editorLayout" : ""} ${editorPanelCollapsed ? "editorCollapsed" : ""}`}>
       <aside className="adminPrimarySidebar">
         <div className="visualBrand">
           <img src={content.assets.logo} alt="Phoenix Fitness" />
@@ -320,24 +349,83 @@ export default function AdminPage() {
       </aside>
 
       {mode === "editor" ? (
-        <aside className="visualSidebar">
+        <aside className="visualSidebar editorControlPanel">
           <div className="sidebarTitle">
-            <p>Store Editor</p>
-            <h2>Sections</h2>
+            <div>
+              <p>Store Editor</p>
+              <h2>{editorPanelCollapsed ? "Edit" : "Visual Editor"}</h2>
+            </div>
+            <button
+              aria-label={editorPanelCollapsed ? "Expand editor sidebar" : "Collapse editor sidebar"}
+              className="collapsePanelButton"
+              type="button"
+              onClick={() => setEditorPanelCollapsed((collapsed) => !collapsed)}
+            >
+              {editorPanelCollapsed ? "›" : "‹"}
+            </button>
           </div>
-          <nav className="sectionList" aria-label="Editable sections">
-            {editorSections(content).map((section) => (
-              <button
-                className={activeSection === section.key ? "active" : ""}
-                key={section.key}
-                type="button"
-                onClick={() => setActiveSection(section.key)}
-              >
-                <span>{section.label}</span>
-                <small>{section.hint}</small>
-              </button>
-            ))}
-          </nav>
+
+          {!editorPanelCollapsed ? (
+            <>
+              <div className="editorPanelGroup">
+                <p className="editorPanelLabel">Pages</p>
+                <div className="pagePills" role="tablist" aria-label="Editable pages">
+                  {(["home", ...pageKeys] as EditorPageKey[]).map((pageKey) => (
+                    <button
+                      className={activeEditorPage === pageKey ? "active" : ""}
+                      key={pageKey}
+                      type="button"
+                      onClick={() => {
+                        setActiveEditorPage(pageKey);
+                        if (pageKey === "home") {
+                          setActiveSection("hero");
+                        } else {
+                          setActivePageSection("hero");
+                        }
+                      }}
+                    >
+                      {pageLabel(content, pageKey)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="editorPanelGroup">
+                <p className="editorPanelLabel">Sections</p>
+                <nav className="sectionList compact" aria-label="Editable sections">
+                  {pageSectionTargets(content, activeEditorPage).map((section) => {
+                    const active = activeEditorPage === "home" ? activeSection === section.key : activePageSection === section.key;
+                    return (
+                      <button
+                        className={active ? "active" : ""}
+                        key={section.key}
+                        type="button"
+                        onClick={() => {
+                          if (activeEditorPage === "home") {
+                            setActiveSection(section.key);
+                          } else {
+                            setActivePageSection(section.key);
+                          }
+                        }}
+                      >
+                        <span>{section.label}</span>
+                        <small>{section.hint}</small>
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              <SettingsPanel
+                activeSection={activeSection}
+                activeEditorPage={activeEditorPage}
+                activePageSection={activePageSection}
+                content={content}
+                updateContent={updateContent}
+                uploadImage={uploadImage}
+              />
+            </>
+          ) : null}
         </aside>
       ) : null}
 
@@ -375,38 +463,32 @@ export default function AdminPage() {
       ) : null}
 
       {mode === "editor" ? (
-        <>
-          <section className="previewPane">
-            <header className="editorTopbar">
-              <div>
-                <p>Visual Editor</p>
-                <h1>{editorSections(content).find((section) => section.key === activeSection)?.label}</h1>
-              </div>
-              <div className="editorActions">
-                <SavePill state={saveState} hydrated={hydrated.current} />
-                <a href="/" target="_blank">Open Site</a>
-                <button type="button" onClick={() => saveContent(content, false)}>
-                  Save Now
-                </button>
-              </div>
-            </header>
-            {status ? <p className="adminNotice">{status}</p> : null}
-            {pageKeyFromSection(activeSection) ? (
-              <EditablePagePreview content={content} pageKey={pageKeyFromSection(activeSection)!} />
-            ) : (
-              <SitePreview content={content} activeSection={activeSection} onSelect={setActiveSection} />
-            )}
-          </section>
-
-          <aside className="settingsPane">
-            <SettingsPanel
-              activeSection={activeSection}
+        <section className="previewPane">
+          <header className="editorTopbar">
+            <div>
+              <p>Visual Editor</p>
+              <h1>{pageLabel(content, activeEditorPage)}</h1>
+            </div>
+            <div className="editorActions">
+              <SavePill state={saveState} hydrated={hydrated.current} />
+              <a href={pagePath(content, activeEditorPage)} target="_blank">Open Page</a>
+              <button type="button" onClick={() => saveContent(content, false)}>
+                Save Now
+              </button>
+            </div>
+          </header>
+          {status ? <p className="adminNotice">{status}</p> : null}
+          {activeEditorPage === "home" ? (
+            <SitePreview content={content} activeSection={activeSection} onSelect={setActiveSection} />
+          ) : (
+            <EditablePagePreview
+              activeSection={activePageSection}
               content={content}
-              updateContent={updateContent}
-              uploadImage={uploadImage}
+              onSelect={setActivePageSection}
+              pageKey={activeEditorPage}
             />
-          </aside>
-        </>
+          )}
+        </section>
       ) : null}
 
       {mode === "leads" ? (
@@ -534,6 +616,7 @@ function SitePreview({
               <img src={content.assets.logo} alt="" />
               <div className="navLinks">
                 {content.nav.slice(0, 4).map((link) => <span key={link.label}>{link.label}</span>)}
+                <span>{content.menuButton.label}</span>
               </div>
             </nav>
             <div className="heroImage">
@@ -707,7 +790,17 @@ function PreviewCard({ item }: { item: { title: string; text?: string; image: st
   );
 }
 
-function EditablePagePreview({ content, pageKey }: { content: SiteContent; pageKey: PageKey }) {
+function EditablePagePreview({
+  activeSection,
+  content,
+  onSelect,
+  pageKey,
+}: {
+  activeSection: SectionKey;
+  content: SiteContent;
+  onSelect: (section: SectionKey) => void;
+  pageKey: PageKey;
+}) {
   const page = content.pages[pageKey];
   const primaryButton = page.hero.primaryButton || "Start My Intake";
   const primaryHref = page.hero.primaryHref || "/get-started#intake";
@@ -715,7 +808,7 @@ function EditablePagePreview({ content, pageKey }: { content: SiteContent; pageK
   return (
     <div className="sitePreviewFrame">
       <div className="sitePreviewCanvas">
-        <div className="previewSection active">
+        <div className={`previewSection ${activeSection === "hero" ? "active" : ""}`} onClick={() => onSelect("hero")}>
           <span className="previewTag">Hero</span>
           <section className="pageHero">
             {page.hero.video ? (
@@ -735,7 +828,11 @@ function EditablePagePreview({ content, pageKey }: { content: SiteContent; pageK
           </section>
         </div>
         {page.sections.map((section, index) => (
-          <div className="previewSection active" key={section.id}>
+          <div
+            className={`previewSection ${activeSection === section.id ? "active" : ""}`}
+            key={section.id}
+            onClick={() => onSelect(section.id)}
+          >
             <span className="previewTag">Section {index + 1}: {section.type} - {section.title}</span>
             <PageSectionPreview content={content} section={section} />
           </div>
@@ -846,25 +943,37 @@ function PageSectionPreview({ content, section }: { content: SiteContent; sectio
 
 function SettingsPanel({
   activeSection,
+  activeEditorPage,
+  activePageSection,
   content,
   updateContent,
   uploadImage,
 }: {
   activeSection: SectionKey;
+  activeEditorPage: EditorPageKey;
+  activePageSection: SectionKey;
   content: SiteContent;
   updateContent: (updater: (current: SiteContent) => SiteContent) => void;
   uploadImage: (file: File, onUploaded: (url: string) => void) => void;
 }) {
-  const editablePageKey = pageKeyFromSection(activeSection);
-  if (editablePageKey) {
+  if (activeEditorPage !== "home") {
+    if (activePageSection === "nav") {
+      return <GlobalMenuSettings content={content} updateContent={updateContent} />;
+    }
+
     return (
       <PageSettings
+        activePageSection={activePageSection}
         content={content}
-        pageKey={editablePageKey}
+        pageKey={activeEditorPage}
         updateContent={updateContent}
         uploadImage={uploadImage}
       />
     );
+  }
+
+  if (activeSection === "nav") {
+    return <GlobalMenuSettings content={content} updateContent={updateContent} />;
   }
 
   return (
@@ -910,14 +1019,6 @@ function SettingsPanel({
           <UploadInput label="Logo" value={content.assets.logo} onChange={(value) => updateContent((current) => ({ ...current, assets: { ...current.assets, logo: value } }))} onUpload={uploadImage} />
           <UploadInput label="Hero video URL" value={content.assets.heroVideo} onChange={(value) => updateContent((current) => ({ ...current, assets: { ...current.assets, heroVideo: value } }))} onUpload={uploadImage} />
           <UploadInput label="Contact image" value={content.assets.contact} onChange={(value) => updateContent((current) => ({ ...current, assets: { ...current.assets, contact: value } }))} onUpload={uploadImage} />
-        </>
-      ) : null}
-
-      {activeSection === "nav" ? (
-        <>
-          <LinkRepeater title="Header Menu" items={content.nav} onChange={(items) => updateContent((current) => ({ ...current, nav: items }))} />
-          <LinkRepeater title="Important Links" items={content.footer.importantLinks} onChange={(items) => updateContent((current) => ({ ...current, footer: { ...current.footer, importantLinks: items } }))} />
-          <LinkRepeater title="Quick Links" items={content.footer.quickLinks} onChange={(items) => updateContent((current) => ({ ...current, footer: { ...current.footer, quickLinks: items } }))} />
         </>
       ) : null}
 
@@ -1070,18 +1171,94 @@ function ImageTextSettings({
   );
 }
 
+function GlobalMenuSettings({
+  content,
+  updateContent,
+}: {
+  content: SiteContent;
+  updateContent: (updater: (current: SiteContent) => SiteContent) => void;
+}) {
+  return (
+    <div className="settingsPanel">
+      <div className="settingsHeader">
+        <p>Global Navigation</p>
+        <h2>Menus & Buttons</h2>
+      </div>
+
+      <section className="editorRepeater">
+        <div className="repeaterTitle">
+          <h3>Main site pages</h3>
+        </div>
+        {pageKeys.map((key) => {
+          const page = content.pages[key];
+          return (
+            <div className="menuPageFields" key={key}>
+              <TextInput
+                label={`${page.navLabel || key} menu label`}
+                value={page.navLabel}
+                onChange={(value) => updateContent((current) => ({
+                  ...current,
+                  pages: {
+                    ...current.pages,
+                    [key]: { ...current.pages[key], navLabel: value },
+                  },
+                }))}
+              />
+              <TextInput
+                label={`${page.navLabel || key} URL`}
+                value={page.path}
+                onChange={(value) => updateContent((current) => ({
+                  ...current,
+                  pages: {
+                    ...current.pages,
+                    [key]: { ...current.pages[key], path: value },
+                  },
+                }))}
+              />
+            </div>
+          );
+        })}
+      </section>
+
+      <section className="editorRepeater">
+        <div className="repeaterTitle">
+          <h3>Header / footer button</h3>
+        </div>
+        <TextInput
+          label="Button label"
+          value={content.menuButton.label}
+          onChange={(value) => updateContent((current) => ({ ...current, menuButton: { ...current.menuButton, label: value } }))}
+        />
+        <TextInput
+          label="Button link"
+          value={content.menuButton.href}
+          onChange={(value) => updateContent((current) => ({ ...current, menuButton: { ...current.menuButton, href: value } }))}
+        />
+      </section>
+
+      <LinkRepeater title="Homepage section menu" items={content.nav} onChange={(items) => updateContent((current) => ({ ...current, nav: items }))} />
+      <LinkRepeater title="Important footer links" items={content.footer.importantLinks} onChange={(items) => updateContent((current) => ({ ...current, footer: { ...current.footer, importantLinks: items } }))} />
+      <LinkRepeater title="Quick footer links" items={content.footer.quickLinks} onChange={(items) => updateContent((current) => ({ ...current, footer: { ...current.footer, quickLinks: items } }))} />
+    </div>
+  );
+}
+
 function PageSettings({
+  activePageSection,
   content,
   pageKey,
   updateContent,
   uploadImage,
 }: {
+  activePageSection: SectionKey;
   content: SiteContent;
   pageKey: PageKey;
   updateContent: (updater: (current: SiteContent) => SiteContent) => void;
   uploadImage: (file: File, onUploaded: (url: string) => void) => void;
 }) {
   const page = content.pages[pageKey];
+  const selectedSectionIndex = page.sections.findIndex((section) => section.id === activePageSection);
+  const selectedSection = selectedSectionIndex >= 0 ? page.sections[selectedSectionIndex] : null;
 
   function updatePage(updater: (page: SiteContent["pages"][PageKey]) => SiteContent["pages"][PageKey]) {
     updateContent((current) => ({
@@ -1148,26 +1325,28 @@ function PageSettings({
     <div className="settingsPanel">
       <div className="settingsHeader">
         <p>Page Settings</p>
-        <h2>{page.navLabel}</h2>
+        <h2>{activePageSection === "hero" ? `${page.navLabel} Hero` : selectedSection?.title || page.navLabel}</h2>
       </div>
 
       <TextInput label="Navigation label" value={page.navLabel} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, navLabel: value }))} />
       <TextInput label="Path" value={page.path} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, path: value }))} />
 
-      <section className="editorRepeater">
-        <div className="repeaterTitle">
-          <h3>Hero</h3>
-        </div>
-        <TextInput label="Eyebrow" value={page.hero.eyebrow} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, eyebrow: value } }))} />
-        <TextInput label="Title" value={page.hero.title} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, title: value } }))} />
-        <TextArea label="Text" value={page.hero.text} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, text: value } }))} />
-        <UploadInput label="Hero image" value={page.hero.image} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, image: value } }))} onUpload={uploadImage} />
-        <UploadInput label="Hero video URL" value={page.hero.video || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, video: value } }))} onUpload={uploadImage} />
-        <TextInput label="Primary button" value={page.hero.primaryButton || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, primaryButton: value } }))} />
-        <TextInput label="Primary button link" value={page.hero.primaryHref || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, primaryHref: value } }))} />
-        <TextInput label="Secondary button" value={page.hero.secondaryButton || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, secondaryButton: value } }))} />
-        <TextInput label="Secondary button link" value={page.hero.secondaryHref || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, secondaryHref: value } }))} />
-      </section>
+      {activePageSection === "hero" ? (
+        <section className="editorRepeater">
+          <div className="repeaterTitle">
+            <h3>Hero</h3>
+          </div>
+          <TextInput label="Eyebrow" value={page.hero.eyebrow} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, eyebrow: value } }))} />
+          <TextInput label="Title" value={page.hero.title} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, title: value } }))} />
+          <TextArea label="Text" value={page.hero.text} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, text: value } }))} />
+          <UploadInput label="Hero image" value={page.hero.image} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, image: value } }))} onUpload={uploadImage} />
+          <UploadInput label="Hero video URL" value={page.hero.video || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, video: value } }))} onUpload={uploadImage} />
+          <TextInput label="Primary button" value={page.hero.primaryButton || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, primaryButton: value } }))} />
+          <TextInput label="Primary button link" value={page.hero.primaryHref || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, primaryHref: value } }))} />
+          <TextInput label="Secondary button" value={page.hero.secondaryButton || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, secondaryButton: value } }))} />
+          <TextInput label="Secondary button link" value={page.hero.secondaryHref || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, secondaryHref: value } }))} />
+        </section>
+      ) : null}
 
       <section className="editorRepeater">
         <div className="repeaterTitle">
@@ -1182,26 +1361,30 @@ function PageSettings({
         </div>
       </section>
 
-      <Repeater
-        title="Page Sections"
-        items={page.sections}
-        getLabel={(section, index) => `${index + 1}. ${section.type} - ${section.title}`}
-        onAdd={() => addSection("split")}
-        onRemove={(index) => updatePage((currentPage) => ({ ...currentPage, sections: currentPage.sections.filter((_, itemIndex) => itemIndex !== index) }))}
-        render={(section, index) => (
+      {selectedSection ? (
+        <section className="editorRepeater">
+          <div className="repeaterTitle">
+            <h3>Selected section</h3>
+            <button
+              type="button"
+              onClick={() => updatePage((currentPage) => ({ ...currentPage, sections: currentPage.sections.filter((_, itemIndex) => itemIndex !== selectedSectionIndex) }))}
+            >
+              Remove
+            </button>
+          </div>
           <>
             <div className="sectionTools">
-              <button type="button" onClick={() => moveSection(index, -1)} disabled={index === 0}>Move up</button>
-              <button type="button" onClick={() => moveSection(index, 1)} disabled={index === page.sections.length - 1}>Move down</button>
-              <button type="button" onClick={() => duplicateSection(index)}>Duplicate</button>
+              <button type="button" onClick={() => moveSection(selectedSectionIndex, -1)} disabled={selectedSectionIndex === 0}>Move up</button>
+              <button type="button" onClick={() => moveSection(selectedSectionIndex, 1)} disabled={selectedSectionIndex === page.sections.length - 1}>Move down</button>
+              <button type="button" onClick={() => duplicateSection(selectedSectionIndex)}>Duplicate</button>
             </div>
-            <TextInput label="Section ID" value={section.id} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, index, { ...section, id: value }) }))} />
+            <TextInput label="Section ID" value={selectedSection.id} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, selectedSectionIndex, { ...selectedSection, id: value }) }))} />
             <select
               aria-label="Section type"
-              value={section.type}
+              value={selectedSection.type}
               onChange={(event) => updatePage((currentPage) => ({
                 ...currentPage,
-                sections: updateAt(currentPage.sections, index, { ...section, type: event.target.value as PageSection["type"] }),
+                sections: updateAt(currentPage.sections, selectedSectionIndex, { ...selectedSection, type: event.target.value as PageSection["type"] }),
               }))}
             >
               <option value="split">Split image/text</option>
@@ -1210,38 +1393,38 @@ function PageSettings({
               <option value="trainers">Trainer grid</option>
               <option value="intake">Intake form</option>
             </select>
-            <TextInput label="Eyebrow" value={section.eyebrow} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, index, { ...section, eyebrow: value }) }))} />
-            <TextInput label="Title" value={section.title} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, index, { ...section, title: value }) }))} />
-            <TextArea label="Text" value={section.text} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, index, { ...section, text: value }) }))} />
-            {section.type === "split" || section.type === "intake" ? (
-              <UploadInput label="Section image" value={section.image} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, index, { ...section, image: value }) }))} onUpload={uploadImage} />
+            <TextInput label="Eyebrow" value={selectedSection.eyebrow} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, selectedSectionIndex, { ...selectedSection, eyebrow: value }) }))} />
+            <TextInput label="Title" value={selectedSection.title} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, selectedSectionIndex, { ...selectedSection, title: value }) }))} />
+            <TextArea label="Text" value={selectedSection.text} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, selectedSectionIndex, { ...selectedSection, text: value }) }))} />
+            {selectedSection.type === "split" || selectedSection.type === "intake" ? (
+              <UploadInput label="Section image" value={selectedSection.image} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, selectedSectionIndex, { ...selectedSection, image: value }) }))} onUpload={uploadImage} />
             ) : null}
-            <UploadInput label="Section video URL" value={section.video || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, index, { ...section, video: value }) }))} onUpload={uploadImage} />
-            <TextInput label="Button label" value={section.buttonLabel || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, index, { ...section, buttonLabel: value }) }))} />
-            <TextInput label="Button link" value={section.buttonHref || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, index, { ...section, buttonHref: value }) }))} />
-            {section.type === "split" ? (
+            <UploadInput label="Section video URL" value={selectedSection.video || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, selectedSectionIndex, { ...selectedSection, video: value }) }))} onUpload={uploadImage} />
+            <TextInput label="Button label" value={selectedSection.buttonLabel || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, selectedSectionIndex, { ...selectedSection, buttonLabel: value }) }))} />
+            <TextInput label="Button link" value={selectedSection.buttonHref || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, selectedSectionIndex, { ...selectedSection, buttonHref: value }) }))} />
+            {selectedSection.type === "split" ? (
               <>
                 <label className="toggleField">
                   <input
                     type="checkbox"
-                    checked={Boolean(section.reverse)}
-                    onChange={(event) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, index, { ...section, reverse: event.target.checked }) }))}
+                    checked={Boolean(selectedSection.reverse)}
+                    onChange={(event) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, selectedSectionIndex, { ...selectedSection, reverse: event.target.checked }) }))}
                   />
                   <span>Reverse image and text</span>
                 </label>
               </>
             ) : null}
-            {section.type === "features" || section.type === "process" ? (
+            {selectedSection.type === "features" || selectedSection.type === "process" ? (
               <ImageTextRepeaterInline
-                items={section.items || []}
-                onChange={(items) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, index, { ...section, items }) }))}
+                items={selectedSection.items || []}
+                onChange={(items) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, selectedSectionIndex, { ...selectedSection, items }) }))}
                 uploadImage={uploadImage}
                 showImages
               />
             ) : null}
           </>
-        )}
-      />
+        </section>
+      ) : null}
     </div>
   );
 }

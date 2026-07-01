@@ -43,7 +43,7 @@ export function SiteHeader({
           {navLinks.map((link) => (
             <a href={link.href} key={link.href}>{link.label}</a>
           ))}
-          <a className="navButton" href="/get-started#intake">Start Intake</a>
+          <a className="navButton" href={content.menuButton.href}>{content.menuButton.label}</a>
         </div>
       </nav>
     </>
@@ -64,7 +64,7 @@ export function SiteFooter({ content }: { content: SiteContent }) {
       <div>
         <img src={content.assets.logo} alt="Phoenix Fitness" />
         <p>{content.business.footerName}</p>
-        <a className="primaryButton" href="/get-started#intake">Start My Intake</a>
+        <a className="primaryButton" href={content.menuButton.href}>{content.menuButton.label}</a>
       </div>
       <div>
         <h3>Explore</h3>
