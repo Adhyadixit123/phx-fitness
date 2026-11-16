@@ -67,6 +67,29 @@ export type EditablePage = {
 export type PageKey = "about" | "personalTraining" | "facility" | "trainersPage" | "getStarted";
 
 export type SiteContent = {
+  introOffer: {
+    enabled: boolean;
+    eyebrow: string;
+    title: string;
+    subtitle: string;
+    description: string;
+    terms: string;
+    buttonLabel: string;
+    buttonHref: string;
+    dismissLabel: string;
+    image: string;
+    imageMobile: string;
+    imageAlt: string;
+    backgroundColor: string;
+    textColor: string;
+    accentColor: string;
+    buttonTextColor: string;
+    desktopWidth: number;
+    mobileWidth: number;
+    delaySeconds: number;
+    oncePerSession: boolean;
+    homeOnly: boolean;
+  };
   assets: {
     logo: string;
     heroPoster: string;
@@ -197,6 +220,29 @@ const gymAssets = {
 const shopifyVideo = "https://cdn.shopify.com/videos/c/o/v/50802481d7564557a6be9181f1844591.mp4";
 
 export const defaultSiteContent: SiteContent = {
+  introOffer: {
+    enabled: true,
+    eyebrow: "INTRO OFFER",
+    title: "3 for $99",
+    subtitle: "3 months for $99",
+    description: "Make time for yourself. Start your fitness journey with Phoenix Fitness.",
+    terms: "",
+    buttonLabel: "Get the intro offer",
+    buttonHref: "/get-started#intake",
+    dismissLabel: "Maybe later",
+    image: "",
+    imageMobile: "",
+    imageAlt: "Phoenix Fitness training studio",
+    backgroundColor: "#161616",
+    textColor: "#ffffff",
+    accentColor: "#a30b06",
+    buttonTextColor: "#ffffff",
+    desktopWidth: 760,
+    mobileWidth: 94,
+    delaySeconds: 2,
+    oncePerSession: true,
+    homeOnly: true,
+  },
   assets: {
     logo: shopifyHomeAssets.logo,
     heroPoster: shopifyHomeAssets.hero,
@@ -726,6 +772,7 @@ export function mergeSiteContent(content?: Partial<SiteContent> | null): SiteCon
     ...defaultSiteContent,
     ...content,
     assets: { ...defaultSiteContent.assets, ...content?.assets },
+    introOffer: { ...defaultSiteContent.introOffer, ...content?.introOffer },
     business: { ...defaultSiteContent.business, ...content?.business },
     menuButton: { ...defaultSiteContent.menuButton, ...content?.menuButton },
     hero: { ...defaultSiteContent.hero, ...content?.hero },

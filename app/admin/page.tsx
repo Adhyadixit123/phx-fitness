@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import IntroOffer from "../components/IntroOffer";
 import { defaultSiteContent, PageKey, PageSection, SiteContent } from "../lib/siteContent";
 
 type Mode = "editor" | "leads" | "pixels" | "settings";
@@ -38,6 +39,7 @@ function defaultSectionImage(type: PageSection["type"]) {
 }
 
 const sections: { key: SectionKey; label: string; hint: string }[] = [
+  { key: "introOffer", label: "Intro Offer", hint: "Popup content, images, sizing and timing" },
   { key: "business", label: "Business", hint: "Phone, address, footer name" },
   { key: "hero", label: "Hero", hint: "Headline, badges, buttons" },
   { key: "media", label: "Media", hint: "Logo, hero, contact assets" },
@@ -98,6 +100,7 @@ function pageSectionTargets(content: SiteContent, pageKey: EditorPageKey) {
 
   return [
     { key: "hero", label: "Hero", hint: "Page headline, media, buttons" },
+    { key: "introOffer", label: "Intro Offer", hint: "Global promotional popup" },
     { key: "nav", label: "Menus", hint: "Header links, CTA, footer links" },
     ...content.pages[pageKey].sections.map((section, index) => ({
       key: section.id,
@@ -956,6 +959,9 @@ function SettingsPanel({
   updateContent: (updater: (current: SiteContent) => SiteContent) => void;
   uploadImage: (file: File, onUploaded: (url: string) => void) => void;
 }) {
+  if ((activeEditorPage === "home" ? activeSection : activePageSection) === "introOffer") {
+    return <IntroOfferSettings content={content} updateContent={updateContent} uploadImage={uploadImage} />;
+  }
   if (activeEditorPage !== "home") {
     if (activePageSection === "nav") {
       return <GlobalMenuSettings content={content} updateContent={updateContent} />;
@@ -1460,6 +1466,33 @@ function ImageTextRepeaterInline({
       )}
     />
   );
+}
+
+function IntroOfferSettings({ content, updateContent, uploadImage }: {
+  content: SiteContent;
+  updateContent: (updater: (current: SiteContent) => SiteContent) => void;
+  uploadImage: (file: File, onUploaded: (url: string) => void) => void;
+}) {
+  const [preview, setPreview] = useState(false);
+  const offer = content.introOffer;
+  function update(patch: Partial<SiteContent["introOffer"]>) {
+    updateContent((current) => ({ ...current, introOffer: { ...current.introOffer, ...patch } }));
+  }
+  return <div className="settingsPanel offerSettings">
+    <div className="settingsHeader"><p>Global popup</p><h2>Intro Offer</h2></div>
+    {([["enabled", "Enable popup"], ["homeOnly", "Homepage only"], ["oncePerSession", "Show once per browser session"]] as const).map(([key, label]) =>
+      <label className="offerToggle" key={key}><input type="checkbox" checked={offer[key]} onChange={(e) => update({ [key]: e.target.checked })} />{label}</label>)}
+    <button className="settingsSubmit" type="button" onClick={() => setPreview(true)}>Preview popup</button>
+    {preview ? <IntroOffer offer={offer} preview onClose={() => setPreview(false)} /> : null}
+    {([["eyebrow", "Eyebrow"], ["title", "Offer headline"], ["subtitle", "Offer explanation"], ["description", "Description"], ["terms", "Terms and conditions"], ["buttonLabel", "Button text"], ["buttonHref", "Button link"], ["dismissLabel", "Dismiss text"], ["imageAlt", "Image description"]] as const).map(([key, label]) =>
+      <TextInput key={key} label={label} value={offer[key]} onChange={(value) => update({ [key]: value })} />)}
+    <UploadInput label="Desktop image (optional)" value={offer.image} onChange={(image) => update({ image })} onUpload={uploadImage} />
+    <UploadInput label="Mobile image (optional)" value={offer.imageMobile} onChange={(imageMobile) => update({ imageMobile })} onUpload={uploadImage} />
+    {([["backgroundColor", "Background"], ["textColor", "Text"], ["accentColor", "Button background"], ["buttonTextColor", "Button text color"]] as const).map(([key, label]) =>
+      <label className="offerControl" key={key}>{label}<input type="color" value={offer[key]} onChange={(e) => update({ [key]: e.target.value })} /></label>)}
+    {([["desktopWidth", "Desktop width (px)", 360, 1000], ["mobileWidth", "Mobile width (%)", 75, 96], ["delaySeconds", "Display delay (seconds)", 0, 60]] as const).map(([key, label, min, max]) =>
+      <label className="offerControl" key={key}>{label}<input type="number" min={min} max={max} value={offer[key]} onChange={(e) => update({ [key]: Math.max(min, Math.min(max, Number(e.target.value))) })} /></label>)}
+  </div>;
 }
 
 function LinkRepeater({
