@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import type { SiteContent } from "../lib/siteContent";
 
 type Offer = SiteContent["introOffer"];
-const storageKey = "phx-intro-offer-seen";
+const storageKey = "phx-intro-offer-v2-seen";
 
 export function OfferContents({ offer, dismiss }: { offer: Offer; dismiss: () => void }) {
   const [failedImage, setFailedImage] = useState("");
@@ -21,7 +21,7 @@ export function OfferContents({ offer, dismiss }: { offer: Offer; dismiss: () =>
       <button type="button" className="offerClose" aria-label="Close intro offer" onClick={dismiss}>&times;</button>
       <div className="offerCopy">
         <p className="offerEyebrow">{offer.eyebrow}</p>
-        <h2 id="intro-offer-title">{offer.title}</h2>
+        <h2 id="intro-offer-title">{offer.title.split(/\s+/).map((word, index) => <span className={word.toLowerCase() === "for" ? "offerConnector" : undefined} key={index}>{word}{" "}</span>)}</h2>
         <p className="offerSubtitle">{offer.subtitle}</p>
         <p className="offerDescription">{offer.description}</p>
         {offer.buttonLabel ? <a className="offerCta" href={href} onClick={dismiss}>{offer.buttonLabel}</a> : null}

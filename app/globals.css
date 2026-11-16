@@ -2396,45 +2396,61 @@ img {
   }
 }
 .introOffer {
-  background: var(--offer-bg);
+  background: transparent;
   color: var(--offer-text);
-  border: 1px solid #ffffff30;
-  border-radius: 8px;
-  padding: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 50px 16px 40px 76px;
   margin: auto;
   width: min(var(--offer-width), calc(100vw - 40px));
   max-width: none;
   max-height: calc(100dvh - 32px);
   overflow: auto;
-  box-shadow: 0 24px 80px #0008;
+  box-shadow: none;
 }
-.introOffer::backdrop { background: #000b; }
-.offerContent { position: relative; min-width: 0; }
-.offerContent.hasImage { display: grid; grid-template-columns: 38% minmax(0, 1fr); }
-.offerImage { display: block; min-width: 0; }
-.offerImage img { width: 100%; height: 100%; min-height: 100%; object-fit: cover; display: block; }
-.offerCopy { padding: 48px 32px 28px; text-align: center; min-width: 0; overflow-wrap: anywhere; }
-.offerEyebrow { margin: 0 0 20px; font-size: 12px; font-weight: 700; letter-spacing: 0; }
-.offerCopy h2 { color: inherit; font-size: 52px; line-height: 1.05; margin: 0 0 12px; letter-spacing: 0; }
-.offerSubtitle { font-size: 24px; font-weight: 700; margin: 0 0 20px; line-height: 1.25; }
-.offerDescription { font-size: 16px; line-height: 1.6; margin: 0 0 24px; }
-.offerCta { display: block; background: var(--offer-accent); color: var(--offer-button-text); padding: 16px; border-radius: 6px; font-size: 16px; font-weight: 700; text-decoration: none; }
+.introOffer::backdrop { background: #000c; backdrop-filter: blur(3px); }
+.offerContent { position: relative; min-width: 0; background: var(--offer-bg); border-radius: 8px; box-shadow: 0 24px 36px #0005; }
+.offerImage { display: block; position: absolute; width: 62%; left: -11%; top: 50%; transform: translateY(-50%) rotate(-8deg); pointer-events: none; }
+.offerImage img { width: 100%; height: auto; object-fit: contain; display: block; filter: drop-shadow(0 22px 16px #0005); }
+.offerCopy { padding: 44px 38px 22px; text-align: center; min-width: 0; overflow-wrap: anywhere; }
+.hasImage .offerCopy { margin-left: 48%; padding-left: 0; }
+.offerEyebrow { margin: 0 0 14px; font-size: 12px; font-weight: 800; letter-spacing: 0; }
+.offerCopy h2 { color: inherit; font-family: Impact, "Arial Black", sans-serif; font-size: 100px; font-weight: 900; text-transform: uppercase; line-height: .9; margin: 0 auto 18px; letter-spacing: 0; max-width: 360px; }
+.offerCopy h2 span { display: block; max-width: 100%; }
+.offerCopy h2 .offerConnector { font-family: Arial, sans-serif; font-size: 24px; line-height: 1.8; font-weight: 800; }
+.offerSubtitle { font-size: 22px; font-weight: 800; margin: 0 0 10px; line-height: 1.25; }
+.offerDescription { font-size: 14px; line-height: 1.5; margin: 0 0 22px; }
+.offerCta { display: block; background: var(--offer-accent); color: var(--offer-button-text); padding: 15px 20px; border-radius: 32px; font-size: 14px; font-weight: 800; text-transform: uppercase; text-decoration: none; transition: transform .15s ease; }
+.offerCta:hover { transform: translateY(-2px); }
 .offerTerms { font-size: 12px; line-height: 1.5; margin: 16px 0 0; white-space: pre-wrap; }
-.offerDismiss { display: block; margin: 14px auto 0; background: transparent; color: inherit; border: 0; min-height: 44px; padding: 8px 16px; font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; }
-.offerClose { position: absolute; right: 8px; top: 8px; width: 44px; height: 44px; background: #fff; color: #161616; border: 0; border-radius: 50%; cursor: pointer; font-size: 28px; line-height: 1; }
-.introOffer :focus-visible { outline: 3px solid #f5b642; outline-offset: 3px; }
+.offerDismiss { display: block; margin: 6px auto 0; background: transparent; color: inherit; border: 0; min-height: 44px; padding: 8px 16px; font: inherit; font-size: 12px; text-decoration: underline; cursor: pointer; }
+.offerClose { position: absolute; z-index: 2; right: 3px; top: 3px; width: 44px; height: 44px; background: transparent; color: var(--offer-text); border: 0; border-radius: 50%; cursor: pointer; font-size: 26px; line-height: 1; }
+.introOffer :focus-visible { outline: 2px solid currentColor; outline-offset: -4px; }
 .offerToggle { display: flex; align-items: center; gap: 10px; margin: 16px 0; }
 .offerToggle input { width: 18px; height: 18px; }
 .offerControl { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 16px 0; }
 .offerControl input { max-width: 100px; padding: 6px; }
 .offerSettings > .settingsSubmit { margin-bottom: 20px; }
-@media (max-width: 600px) {
-  .introOffer { width: var(--offer-mobile-width); max-height: calc(100dvh - 24px); }
-  .offerContent.hasImage { grid-template-columns: minmax(0, 1fr); }
-  .offerImage { height: 145px; }
-  .offerCopy { padding: 32px 22px 16px; }
-  .offerCopy h2 { font-size: 42px; }
-  .offerSubtitle { font-size: 22px; }
-  .offerEyebrow { margin-bottom: 12px; }
+@media (max-width: 700px) {
+  .introOffer { width: var(--offer-mobile-width); max-height: calc(100dvh - 24px); padding: 85px 6px 14px; }
+  .offerImage { width: 78%; max-width: 300px; left: 50%; top: -80px; transform: translateX(-50%) rotate(-8deg); }
+  .offerCopy { padding: 44px 24px 12px; }
+  .hasImage .offerCopy { margin-left: 0; padding: 132px 24px 12px; }
+  .offerCopy h2 { font-size: 76px; max-width: 280px; margin-bottom: 14px; }
+  .offerSubtitle { font-size: 20px; }
+  .offerEyebrow { margin-bottom: 10px; }
   .offerDescription { margin-bottom: 18px; }
+}
+@media (max-width: 360px) {
+  .offerCopy h2 { font-size: 64px; }
+  .hasImage .offerCopy { padding-top: 102px; }
+}
+@media (max-width: 700px) and (max-height: 700px) {
+  .introOffer { padding-top: 60px; }
+  .offerImage { max-width: 210px; top: -55px; }
+  .hasImage .offerCopy { padding-top: 90px; }
+  .offerCopy h2 { font-size: 52px; margin-bottom: 10px; }
+  .offerCopy h2 .offerConnector { font-size: 18px; line-height: 1.5; }
+  .offerSubtitle { font-size: 18px; }
+  .offerDescription { margin-bottom: 12px; }
 }
