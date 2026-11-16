@@ -15,7 +15,10 @@ export default async function GetStartedPage() {
           {page.hero.video ? (
             <video src={page.hero.video} poster={page.hero.image} autoPlay muted loop playsInline />
           ) : (
-            <img src={page.hero.image} alt="" />
+            <picture>
+              {page.hero.imageMobile ? <source media="(max-width: 700px)" srcSet={page.hero.imageMobile} /> : null}
+              <img src={page.hero.image} alt="" />
+            </picture>
           )}
         </div>
         <div className="intakeShell">

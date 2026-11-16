@@ -11,6 +11,25 @@ function shopifyImage(src: string, width: number) {
   return `${src}${separator}width=${width}`;
 }
 
+function ResponsiveHomeImage({
+  alt = "",
+  image,
+  imageMobile,
+  width,
+}: {
+  alt?: string;
+  image: string;
+  imageMobile?: string;
+  width: number;
+}) {
+  return (
+    <picture>
+      {imageMobile ? <source media="(max-width: 700px)" srcSet={shopifyImage(imageMobile, Math.min(width, 560))} /> : null}
+      <img src={shopifyImage(image, width)} alt={alt} loading="lazy" decoding="async" />
+    </picture>
+  );
+}
+
 export default async function Home() {
   const content = await getSiteContent();
   const footerLinks = [
@@ -43,8 +62,8 @@ export default async function Home() {
             </div>
           </div>
           <div className="heroActions">
-            <a className="primaryButton" href="/get-started#intake">Start My Intake</a>
-            <a className="secondaryButton" href="/personal-training">See How It Works</a>
+            <a className="primaryButton" href={content.menuButton.href}>{content.hero.primaryButton}</a>
+            <a className="secondaryButton" href="/personal-training">{content.hero.secondaryButton}</a>
           </div>
         </div>
       </section>
@@ -66,7 +85,7 @@ export default async function Home() {
         <div className="problemGrid">
           {content.problems.items.map((item) => (
             <article className="imageCard" key={item.title}>
-              <img src={shopifyImage(item.image, 760)} alt="" loading="lazy" decoding="async" />
+              <ResponsiveHomeImage image={item.image} imageMobile={item.imageMobile} width={760} />
               <div>
                 <h3>{item.title}</h3>
                 <p>{item.text}</p>
@@ -84,14 +103,14 @@ export default async function Home() {
         <div className="stepGrid">
           {content.steps.items.map((item, index) => (
             <article className="stepCard" key={item.title}>
-              <img src={shopifyImage(item.image, 760)} alt="" loading="lazy" decoding="async" />
+              <ResponsiveHomeImage image={item.image} imageMobile={item.imageMobile} width={760} />
               <span>{String(index + 1).padStart(2, "0")}</span>
               <h3>{item.title}</h3>
               <p>{item.text}</p>
             </article>
           ))}
         </div>
-        <a className="centerButton" href="/get-started#intake">Start My Intake</a>
+        <a className="centerButton" href={content.menuButton.href}>{content.steps.button}</a>
       </section>
 
       <section className="darkSection difference">
@@ -102,7 +121,7 @@ export default async function Home() {
         <div className="differenceGrid">
           {content.difference.items.map((item) => (
             <article key={item.title}>
-              <img src={shopifyImage(item.image, 720)} alt="" loading="lazy" decoding="async" />
+              <ResponsiveHomeImage image={item.image} imageMobile={item.imageMobile} width={720} />
               <h3>{item.title}</h3>
             </article>
           ))}
@@ -117,9 +136,10 @@ export default async function Home() {
         <div className="trainerGrid">
           {content.trainers.items.map((trainer) => (
             <article className="trainerCard" key={trainer.name}>
-              <img src={shopifyImage(trainer.image, 720)} alt={trainer.name} loading="lazy" decoding="async" />
+              <ResponsiveHomeImage alt={trainer.name} image={trainer.image} imageMobile={trainer.imageMobile} width={720} />
               <h3>{trainer.name}</h3>
               <p>{trainer.role}</p>
+              {trainer.bio ? <small>{trainer.bio}</small> : null}
             </article>
           ))}
         </div>

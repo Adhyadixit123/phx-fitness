@@ -1,6 +1,25 @@
 import ContactForm from "./ContactForm";
 import { EditablePage, PageHeroContent, PageSection, SiteContent } from "../lib/siteContent";
 
+function ResponsiveImage({
+  alt = "",
+  className,
+  image,
+  imageMobile = "",
+}: {
+  alt?: string;
+  className?: string;
+  image: string;
+  imageMobile?: string;
+}) {
+  return (
+    <picture className={className}>
+      {imageMobile ? <source media="(max-width: 700px)" srcSet={imageMobile} /> : null}
+      <img src={image} alt={alt} />
+    </picture>
+  );
+}
+
 export function SiteHeader({
   content,
   menuOpen = false,
@@ -91,6 +110,7 @@ export function PageHero({
   title,
   text,
   image,
+  imageMobile = "",
   video = "",
   primaryButton = "Start My Intake",
   primaryHref = "/get-started#intake",
@@ -102,7 +122,7 @@ export function PageHero({
       {video ? (
         <video src={video} poster={image} autoPlay muted loop playsInline />
       ) : (
-        <img src={image} alt="" />
+        <ResponsiveImage image={image} imageMobile={imageMobile} />
       )}
       <div>
         <p>{eyebrow}</p>
@@ -122,6 +142,7 @@ export function SplitStory({
   title,
   text,
   image,
+  imageMobile = "",
   video = "",
   buttonLabel = "",
   buttonHref = "",
@@ -131,6 +152,7 @@ export function SplitStory({
   title: string;
   text: string;
   image: string;
+  imageMobile?: string;
   video?: string;
   buttonLabel?: string;
   buttonHref?: string;
@@ -138,7 +160,7 @@ export function SplitStory({
 }) {
   return (
     <section className={`splitStory ${reverse ? "reverse" : ""}`}>
-      {video ? <video src={video} poster={image} controls playsInline /> : <img src={image} alt="" />}
+      {video ? <video src={video} poster={image} controls playsInline /> : <ResponsiveImage image={image} imageMobile={imageMobile} />}
       <div>
         <p>{eyebrow}</p>
         <h2>{title}</h2>
@@ -160,7 +182,7 @@ export function FeatureBand({
   eyebrow?: string;
   title: string;
   text?: string;
-  items: { title: string; text?: string; image: string }[];
+  items: { title: string; text?: string; image: string; imageMobile?: string }[];
   buttonLabel?: string;
   buttonHref?: string;
 }) {
@@ -174,7 +196,7 @@ export function FeatureBand({
       <div className="featureGrid">
         {items.map((item) => (
           <article key={item.title}>
-            {item.image ? <img src={item.image} alt="" /> : null}
+            {item.image ? <ResponsiveImage image={item.image} imageMobile={item.imageMobile} /> : null}
             <h3>{item.title}</h3>
             <p>{item.text}</p>
           </article>
@@ -193,6 +215,7 @@ export function ContentPage({ content, page }: { content: SiteContent; page: Edi
         title={page.hero.title}
         text={page.hero.text}
         image={page.hero.image}
+        imageMobile={page.hero.imageMobile}
         video={page.hero.video}
         primaryButton={page.hero.primaryButton}
         primaryHref={page.hero.primaryHref}
@@ -215,6 +238,7 @@ export function PageSectionRenderer({ content, section }: { content: SiteContent
         title={section.title}
         text={section.text}
         image={section.image}
+        imageMobile={section.imageMobile}
         video={section.video}
         buttonLabel={section.buttonLabel}
         buttonHref={section.buttonHref}
@@ -238,7 +262,7 @@ export function PageSectionRenderer({ content, section }: { content: SiteContent
         <div className="processGrid">
           {(section.items || []).map((item, index) => (
             <article key={`${item.title}-${index}`}>
-              {item.image ? <img src={item.image} alt="" /> : null}
+              {item.image ? <ResponsiveImage image={item.image} imageMobile={item.imageMobile} /> : null}
               <span>{String(index + 1).padStart(2, "0")}</span>
               <h3>{item.title}</h3>
               <p>{item.text}</p>
@@ -260,11 +284,12 @@ export function PageSectionRenderer({ content, section }: { content: SiteContent
         </div>
         {content.trainers.items.map((trainer) => (
           <article key={trainer.name}>
-            <img src={trainer.image} alt={trainer.name} />
+            <ResponsiveImage alt={trainer.name} image={trainer.image} imageMobile={trainer.imageMobile} />
             <div>
               <p>{section.eyebrow}</p>
               <h2>{trainer.name}</h2>
               <span>{trainer.role}</span>
+              {trainer.bio ? <small>{trainer.bio}</small> : null}
             </div>
           </article>
         ))}

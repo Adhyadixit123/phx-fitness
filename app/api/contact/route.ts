@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import nodemailer from "nodemailer";
 import { ensureSchema, getSql } from "@/app/lib/db";
 
 export const runtime = "nodejs";
@@ -22,6 +23,75 @@ const requiredDetailFields = [
 function hasDetailValue(value: unknown) {
   if (Array.isArray(value)) return value.length > 0;
   return String(value || "").trim().length > 0;
+}
+
+function formatLeadDetails(details: Record<string, unknown>) {
+  return Object.entries(details)
+    .map(([key, value]) => {
+      const label = key.replace(/([A-Z])/g, " $1").replace(/^./, (letter) => letter.toUpperCase());
+      const formattedValue = Array.isArray(value) ? value.join(", ") : String(value || "");
+      return `${label}: ${formattedValue}`;
+    })
+    .join("\n");
+}
+
+async function sendLeadEmail({
+  details,
+  email,
+  message,
+  name,
+  phone,
+}: {
+  details: Record<string, unknown>;
+  email: string;
+  message: string;
+  name: string;
+  phone: string;
+}) {
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPassword = process.env.SMTP_PASSWORD;
+  const notifyEmail = process.env.LEAD_NOTIFY_EMAIL || smtpUser;
+
+  if (!smtpUser || !smtpPassword || !notifyEmail) {
+    console.warn("Lead notification email skipped: SMTP env vars are incomplete.");
+    return;
+  }
+
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST || "smtp.gmail.com",
+    port: Number(process.env.SMTP_PORT || 465),
+    secure: String(process.env.SMTP_PORT || "465") === "465",
+    auth: {
+      user: smtpUser,
+      pass: smtpPassword,
+    },
+  });
+
+  const detailText = formatLeadDetails(details);
+  const text = [
+    "New Phoenix Fitness intake lead",
+    "",
+    `Name: ${name}`,
+    `Phone: ${phone}`,
+    `Email: ${email}`,
+    `Message: ${message}`,
+    "",
+    "Intake Details",
+    detailText,
+  ].join("\n");
+
+  const sent = await transporter.sendMail({
+    from: process.env.SMTP_FROM || smtpUser,
+    to: notifyEmail,
+    replyTo: email,
+    subject: `New Phoenix Fitness intake: ${name}`,
+    text,
+  });
+  console.log("Lead notification email sent", {
+    accepted: sent.accepted,
+    messageId: sent.messageId,
+    to: notifyEmail,
+  });
 }
 
 export async function POST(request: Request) {
@@ -64,6 +134,18 @@ export async function POST(request: Request) {
     INSERT INTO leads (name, phone, email, message, source, details)
     VALUES (${name}, ${phone}, ${email}, ${message}, 'intake_form', ${JSON.stringify(details)}::jsonb)
   `;
+
+  try {
+    await sendLeadEmail({ details: details as Record<string, unknown>, email, message, name, phone });
+  } catch (error) {
+    console.error("Lead notification email failed", {
+      command: (error as { command?: string }).command,
+      code: (error as { code?: string }).code,
+      message: (error as Error).message,
+      response: (error as { response?: string }).response,
+      responseCode: (error as { responseCode?: number }).responseCode,
+    });
+  }
 
   return NextResponse.json({ ok: true });
 }

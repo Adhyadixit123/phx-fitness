@@ -2,6 +2,7 @@ export type ImageTextItem = {
   title: string;
   text?: string;
   image: string;
+  imageMobile?: string;
 };
 
 export type StatItem = {
@@ -13,7 +14,9 @@ export type StatItem = {
 export type TrainerItem = {
   name: string;
   role: string;
+  bio?: string;
   image: string;
+  imageMobile?: string;
 };
 
 export type TestimonialItem = {
@@ -38,6 +41,7 @@ export type PageSection = {
   title: string;
   text: string;
   image: string;
+  imageMobile?: string;
   video?: string;
   buttonLabel?: string;
   buttonHref?: string;
@@ -50,6 +54,7 @@ export type PageHeroContent = {
   title: string;
   text: string;
   image: string;
+  imageMobile?: string;
   video?: string;
   primaryButton?: string;
   primaryHref?: string;
@@ -95,6 +100,7 @@ export type SiteContent = {
     heroPoster: string;
     heroVideo: string;
     contact: string;
+    contactMobile?: string;
   };
   business: {
     phone: string;
@@ -248,6 +254,7 @@ export const defaultSiteContent: SiteContent = {
     heroPoster: shopifyHomeAssets.hero,
     heroVideo: shopifyVideo,
     contact: shopifyHomeAssets.contact,
+    contactMobile: shopifyHomeAssets.contact,
   },
   business: {
     phone: "(732)545-0100",
@@ -306,9 +313,24 @@ export const defaultSiteContent: SiteContent = {
     eyebrow: "Meet Your",
     title: "Certified Trainers",
     items: [
-      { name: "Rob Ruggieri", role: "Owner, Personal Trainer", image: shopifyHomeAssets.trainer1 },
-      { name: "Amy Weber", role: "Personal Trainer", image: shopifyHomeAssets.trainer2 },
-      { name: "Ben Ruggieri", role: "Personal Trainer", image: shopifyHomeAssets.trainer3 },
+      {
+        name: "Rob Ruggieri",
+        role: "Owner, Personal Trainer",
+        bio: "Rob helps clients train with structure, accountability, and a practical plan that fits real life.",
+        image: shopifyHomeAssets.trainer1,
+      },
+      {
+        name: "Amy Weber",
+        role: "Personal Trainer",
+        bio: "Amy focuses on coaching movement clearly, building confidence, and keeping sessions approachable.",
+        image: shopifyHomeAssets.trainer2,
+      },
+      {
+        name: "Ben Ruggieri",
+        role: "Personal Trainer",
+        bio: "Ben supports clients with attentive coaching, form feedback, and steady progress from session to session.",
+        image: shopifyHomeAssets.trainer3,
+      },
     ],
   },
   benefits: [
@@ -741,6 +763,14 @@ export const defaultSiteContent: SiteContent = {
 
 export function mergeSiteContent(content?: Partial<SiteContent> | null): SiteContent {
   const mergedPages = { ...defaultSiteContent.pages };
+  const savedTrainerItems = content?.trainers?.items || [];
+  const mergedTrainerItems = savedTrainerItems.length
+    ? savedTrainerItems.map((trainer, index) => ({
+      ...defaultSiteContent.trainers.items[index],
+      ...trainer,
+    }))
+    : defaultSiteContent.trainers.items;
+
   for (const key of Object.keys(defaultSiteContent.pages) as PageKey[]) {
     const savedPage = content?.pages?.[key];
     if (!savedPage) {
@@ -779,7 +809,7 @@ export function mergeSiteContent(content?: Partial<SiteContent> | null): SiteCon
     problems: { ...defaultSiteContent.problems, ...content?.problems },
     steps: { ...defaultSiteContent.steps, ...content?.steps },
     difference: { ...defaultSiteContent.difference, ...content?.difference },
-    trainers: { ...defaultSiteContent.trainers, ...content?.trainers },
+    trainers: { ...defaultSiteContent.trainers, ...content?.trainers, items: mergedTrainerItems },
     testimonials: { ...defaultSiteContent.testimonials, ...content?.testimonials },
     contact: { ...defaultSiteContent.contact, ...content?.contact },
     footer: { ...defaultSiteContent.footer, ...content?.footer },

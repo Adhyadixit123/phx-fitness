@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import IntroOffer from "../components/IntroOffer";
 import { defaultSiteContent, PageKey, PageSection, SiteContent } from "../lib/siteContent";
@@ -18,6 +18,46 @@ type Lead = {
   details?: Record<string, unknown>;
   created_at: string;
 };
+
+const leadDetailLabels: Record<string, string> = {
+  goals: "Goals",
+  motivation: "Goal outcome",
+  trainingHistory: "Fitness background",
+  healthHistory: "Health history",
+  injuries: "Injuries or limitations",
+  availability: "Availability",
+  preferredStart: "Preferred start",
+  weeklySessions: "Sessions per week",
+  trainingPreference: "Training preference",
+  nutritionSupport: "Nutrition support",
+  supplements: "Supplements",
+  biggestObstacle: "Consistency obstacle",
+  readiness: "Readiness",
+  trainerNotes: "Trainer notes",
+  contactName: "Contact name",
+  contactPhone: "Contact phone",
+  contactEmail: "Contact email",
+};
+
+const leadDetailOrder = [
+  "goals",
+  "motivation",
+  "trainingHistory",
+  "healthHistory",
+  "injuries",
+  "availability",
+  "preferredStart",
+  "weeklySessions",
+  "trainingPreference",
+  "nutritionSupport",
+  "supplements",
+  "biggestObstacle",
+  "readiness",
+  "trainerNotes",
+  "contactName",
+  "contactPhone",
+  "contactEmail",
+];
 
 const cloudName = "dd9j6cxtw";
 const uploadPreset = "ml_default";
@@ -112,6 +152,32 @@ function pageSectionTargets(content: SiteContent, pageKey: EditorPageKey) {
 
 function updateAt<T>(items: T[], index: number, value: T) {
   return items.map((item, itemIndex) => (itemIndex === index ? value : item));
+}
+
+function formatLeadDate(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+function formatLeadValue(value: unknown) {
+  if (Array.isArray(value)) {
+    return value.length ? value.join(", ") : "Not answered";
+  }
+
+  return String(value || "Not answered");
+}
+
+function orderedLeadDetails(details?: Record<string, unknown>) {
+  if (!details) {
+    return [];
+  }
+
+  return [
+    ...leadDetailOrder.filter((key) => key in details).map((key) => [key, details[key]] as [string, unknown]),
+    ...Object.entries(details).filter(([key]) => !leadDetailOrder.includes(key)),
+  ];
 }
 
 function isVideoUrl(value: string) {
@@ -432,19 +498,6 @@ export default function AdminPage() {
         </aside>
       ) : null}
 
-      {mode === "leads" ? (
-        <aside className="visualSidebar">
-          <div className="sidebarTitle">
-            <p>Leads</p>
-            <h2>Overview</h2>
-          </div>
-          <div className="leadSummary">
-            <strong>{leads.length}</strong>
-            <span>Total leads captured</span>
-          </div>
-        </aside>
-      ) : null}
-
       {mode === "pixels" ? (
         <aside className="visualSidebar">
           <div className="sidebarTitle">
@@ -495,18 +548,18 @@ export default function AdminPage() {
       ) : null}
 
       {mode === "leads" ? (
-        <section className="adminWorkspace">
+        <section className="adminWorkspace leadsWorkspace">
           <header className="editorTopbar">
             <div>
               <p>Lead Capture</p>
-              <h1>Contact Form Leads</h1>
+              <h1>Leads Inbox</h1>
             </div>
             <div className="editorActions">
               <button type="button" onClick={loadLeads}>Refresh</button>
               <a href="/" target="_blank">Open Site</a>
             </div>
           </header>
-          <LeadTable leads={leads} />
+          <LeadInbox leads={leads} />
         </section>
       ) : null}
 
@@ -698,6 +751,7 @@ function SitePreview({
                   <img src={trainer.image} alt="" />
                   <h3>{trainer.name}</h3>
                   <p>{trainer.role}</p>
+                  {trainer.bio ? <small>{trainer.bio}</small> : null}
                 </article>
               ))}
             </div>
@@ -920,6 +974,7 @@ function PageSectionPreview({ content, section }: { content: SiteContent; sectio
               <p>{section.eyebrow}</p>
               <h2>{trainer.name}</h2>
               <span>{trainer.role}</span>
+              {trainer.bio ? <small>{trainer.bio}</small> : null}
             </div>
           </article>
         ))}
@@ -1024,7 +1079,8 @@ function SettingsPanel({
         <>
           <UploadInput label="Logo" value={content.assets.logo} onChange={(value) => updateContent((current) => ({ ...current, assets: { ...current.assets, logo: value } }))} onUpload={uploadImage} />
           <UploadInput label="Hero video URL" value={content.assets.heroVideo} onChange={(value) => updateContent((current) => ({ ...current, assets: { ...current.assets, heroVideo: value } }))} onUpload={uploadImage} />
-          <UploadInput label="Contact image" value={content.assets.contact} onChange={(value) => updateContent((current) => ({ ...current, assets: { ...current.assets, contact: value } }))} onUpload={uploadImage} />
+          <UploadInput label="Contact desktop image" value={content.assets.contact} onChange={(value) => updateContent((current) => ({ ...current, assets: { ...current.assets, contact: value } }))} onUpload={uploadImage} />
+          <UploadInput label="Contact mobile image" value={content.assets.contactMobile || ""} onChange={(value) => updateContent((current) => ({ ...current, assets: { ...current.assets, contactMobile: value } }))} onUpload={uploadImage} />
         </>
       ) : null}
 
@@ -1070,13 +1126,15 @@ function SettingsPanel({
           <Repeater
             title="Trainers"
             items={content.trainers.items}
-            onAdd={() => updateContent((current) => ({ ...current, trainers: { ...current.trainers, items: [...current.trainers.items, { name: "New Trainer", role: "Personal Trainer", image: defaultCdnImages.trainer }] } }))}
+            onAdd={() => updateContent((current) => ({ ...current, trainers: { ...current.trainers, items: [...current.trainers.items, { name: "New Trainer", role: "Personal Trainer", bio: "Add this trainer's coaching style and specialties.", image: defaultCdnImages.trainer, imageMobile: "" }] } }))}
             onRemove={(index) => updateContent((current) => ({ ...current, trainers: { ...current.trainers, items: current.trainers.items.filter((_, itemIndex) => itemIndex !== index) } }))}
             render={(item, index) => (
               <>
                 <TextInput label="Name" value={item.name} onChange={(value) => updateContent((current) => ({ ...current, trainers: { ...current.trainers, items: updateAt(current.trainers.items, index, { ...item, name: value }) } }))} />
                 <TextInput label="Role" value={item.role} onChange={(value) => updateContent((current) => ({ ...current, trainers: { ...current.trainers, items: updateAt(current.trainers.items, index, { ...item, role: value }) } }))} />
-                <UploadInput label="Photo" value={item.image} onChange={(value) => updateContent((current) => ({ ...current, trainers: { ...current.trainers, items: updateAt(current.trainers.items, index, { ...item, image: value }) } }))} onUpload={uploadImage} />
+                <TextArea label="Bio" value={item.bio || ""} onChange={(value) => updateContent((current) => ({ ...current, trainers: { ...current.trainers, items: updateAt(current.trainers.items, index, { ...item, bio: value }) } }))} />
+                <UploadInput label="Desktop photo" value={item.image} onChange={(value) => updateContent((current) => ({ ...current, trainers: { ...current.trainers, items: updateAt(current.trainers.items, index, { ...item, image: value }) } }))} onUpload={uploadImage} />
+                <UploadInput label="Mobile photo" value={item.imageMobile || ""} onChange={(value) => updateContent((current) => ({ ...current, trainers: { ...current.trainers, items: updateAt(current.trainers.items, index, { ...item, imageMobile: value }) } }))} onUpload={uploadImage} />
               </>
             )}
           />
@@ -1123,7 +1181,8 @@ function SettingsPanel({
           <TextArea label="Text" value={content.contact.text} onChange={(value) => updateContent((current) => ({ ...current, contact: { ...current.contact, text: value } }))} />
           <TextInput label="Button" value={content.contact.button} onChange={(value) => updateContent((current) => ({ ...current, contact: { ...current.contact, button: value } }))} />
           <TextInput label="Success message" value={content.contact.success} onChange={(value) => updateContent((current) => ({ ...current, contact: { ...current.contact, success: value } }))} />
-          <UploadInput label="Contact image" value={content.assets.contact} onChange={(value) => updateContent((current) => ({ ...current, assets: { ...current.assets, contact: value } }))} onUpload={uploadImage} />
+          <UploadInput label="Contact desktop image" value={content.assets.contact} onChange={(value) => updateContent((current) => ({ ...current, assets: { ...current.assets, contact: value } }))} onUpload={uploadImage} />
+          <UploadInput label="Contact mobile image" value={content.assets.contactMobile || ""} onChange={(value) => updateContent((current) => ({ ...current, assets: { ...current.assets, contactMobile: value } }))} onUpload={uploadImage} />
         </>
       ) : null}
 
@@ -1163,13 +1222,14 @@ function ImageTextSettings({
       <Repeater
         title="Cards"
         items={items}
-        onAdd={() => onItemsChange([...items, { title: "New Card", text: "", image: defaultCdnImages.card }])}
+        onAdd={() => onItemsChange([...items, { title: "New Card", text: "", image: defaultCdnImages.card, imageMobile: "" }])}
         onRemove={(index) => onItemsChange(items.filter((_, itemIndex) => itemIndex !== index))}
         render={(item, index) => (
           <>
             <TextInput label="Title" value={item.title} onChange={(value) => onItemsChange(updateAt(items, index, { ...item, title: value }))} />
             <TextArea label="Text" value={item.text || ""} onChange={(value) => onItemsChange(updateAt(items, index, { ...item, text: value }))} />
-            <UploadInput label="Image" value={item.image} onChange={(value) => onItemsChange(updateAt(items, index, { ...item, image: value }))} onUpload={uploadImage} />
+            <UploadInput label="Desktop image" value={item.image} onChange={(value) => onItemsChange(updateAt(items, index, { ...item, image: value }))} onUpload={uploadImage} />
+            <UploadInput label="Mobile image" value={item.imageMobile || ""} onChange={(value) => onItemsChange(updateAt(items, index, { ...item, imageMobile: value }))} onUpload={uploadImage} />
           </>
         )}
       />
@@ -1345,7 +1405,8 @@ function PageSettings({
           <TextInput label="Eyebrow" value={page.hero.eyebrow} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, eyebrow: value } }))} />
           <TextInput label="Title" value={page.hero.title} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, title: value } }))} />
           <TextArea label="Text" value={page.hero.text} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, text: value } }))} />
-          <UploadInput label="Hero image" value={page.hero.image} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, image: value } }))} onUpload={uploadImage} />
+          <UploadInput label="Hero desktop image" value={page.hero.image} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, image: value } }))} onUpload={uploadImage} />
+          <UploadInput label="Hero mobile image" value={page.hero.imageMobile || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, imageMobile: value } }))} onUpload={uploadImage} />
           <UploadInput label="Hero video URL" value={page.hero.video || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, video: value } }))} onUpload={uploadImage} />
           <TextInput label="Primary button" value={page.hero.primaryButton || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, primaryButton: value } }))} />
           <TextInput label="Primary button link" value={page.hero.primaryHref || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, hero: { ...currentPage.hero, primaryHref: value } }))} />
@@ -1403,7 +1464,10 @@ function PageSettings({
             <TextInput label="Title" value={selectedSection.title} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, selectedSectionIndex, { ...selectedSection, title: value }) }))} />
             <TextArea label="Text" value={selectedSection.text} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, selectedSectionIndex, { ...selectedSection, text: value }) }))} />
             {selectedSection.type === "split" || selectedSection.type === "intake" ? (
-              <UploadInput label="Section image" value={selectedSection.image} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, selectedSectionIndex, { ...selectedSection, image: value }) }))} onUpload={uploadImage} />
+              <>
+                <UploadInput label="Section desktop image" value={selectedSection.image} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, selectedSectionIndex, { ...selectedSection, image: value }) }))} onUpload={uploadImage} />
+                <UploadInput label="Section mobile image" value={selectedSection.imageMobile || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, selectedSectionIndex, { ...selectedSection, imageMobile: value }) }))} onUpload={uploadImage} />
+              </>
             ) : null}
             <UploadInput label="Section video URL" value={selectedSection.video || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, selectedSectionIndex, { ...selectedSection, video: value }) }))} onUpload={uploadImage} />
             <TextInput label="Button label" value={selectedSection.buttonLabel || ""} onChange={(value) => updatePage((currentPage) => ({ ...currentPage, sections: updateAt(currentPage.sections, selectedSectionIndex, { ...selectedSection, buttonLabel: value }) }))} />
@@ -1453,14 +1517,17 @@ function ImageTextRepeaterInline({
       title="Items"
       items={safeItems}
       getLabel={(item, index) => `${index + 1}. ${item.title}`}
-      onAdd={() => onChange([...safeItems, { title: "New item", text: "Item text.", image: defaultCdnImages.card }])}
+      onAdd={() => onChange([...safeItems, { title: "New item", text: "Item text.", image: defaultCdnImages.card, imageMobile: "" }])}
       onRemove={(index) => onChange(safeItems.filter((_, itemIndex) => itemIndex !== index))}
       render={(item, index) => (
         <>
           <TextInput label="Item title" value={item.title} onChange={(value) => onChange(updateAt(safeItems, index, { ...item, title: value }))} />
           <TextArea label="Item text" value={item.text || ""} onChange={(value) => onChange(updateAt(safeItems, index, { ...item, text: value }))} />
           {showImages ? (
-            <UploadInput label="Item image" value={item.image} onChange={(value) => onChange(updateAt(safeItems, index, { ...item, image: value }))} onUpload={uploadImage} />
+            <>
+              <UploadInput label="Item desktop image" value={item.image} onChange={(value) => onChange(updateAt(safeItems, index, { ...item, image: value }))} onUpload={uploadImage} />
+              <UploadInput label="Item mobile image" value={item.imageMobile || ""} onChange={(value) => onChange(updateAt(safeItems, index, { ...item, imageMobile: value }))} onUpload={uploadImage} />
+            </>
           ) : null}
         </>
       )}
@@ -1520,95 +1587,217 @@ function LinkRepeater({
   );
 }
 
-function LeadTable({ leads }: { leads: Lead[] }) {
+function leadInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) {
+    return "PH";
+  }
+  return parts.slice(0, 2).map((part) => part[0]?.toUpperCase()).join("");
+}
+
+function leadDetailPreview(lead: Lead, keys: string[], fallback: string) {
+  const details = lead.details || {};
+  for (const key of keys) {
+    const value = formatLeadValue(details[key]);
+    if (value !== "Not answered") {
+      return value;
+    }
+  }
+  return fallback || "No message";
+}
+
+function LeadInbox({ leads }: { leads: Lead[] }) {
+  const [query, setQuery] = useState("");
+  const [selectedLeadId, setSelectedLeadId] = useState<number | null>(leads[0]?.id || null);
+  const selectedStillExists = leads.some((lead) => lead.id === selectedLeadId);
+  const activeLeadId = selectedStillExists ? selectedLeadId : leads[0]?.id || null;
+
+  const filteredLeads = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) {
+      return leads;
+    }
+
+    return leads.filter((lead) => {
+      const detailText = orderedLeadDetails(lead.details).map(([, value]) => formatLeadValue(value)).join(" ");
+      return [lead.name, lead.phone, lead.email, lead.message, lead.source, detailText]
+        .join(" ")
+        .toLowerCase()
+        .includes(normalizedQuery);
+    });
+  }, [leads, query]);
+
+  const selectedLead = filteredLeads.find((lead) => lead.id === activeLeadId) || filteredLeads[0] || leads.find((lead) => lead.id === activeLeadId) || null;
+  const todayCount = leads.filter((lead) => new Date(lead.created_at).toDateString() === new Date().toDateString()).length;
+  const intakeCount = leads.filter((lead) => orderedLeadDetails(lead.details).length > 0).length;
+  const detailCount = selectedLead ? orderedLeadDetails(selectedLead.details).length : 0;
+  const latestLead = leads[0];
+
+  function copySelectedLead() {
+    if (!selectedLead) {
+      return;
+    }
+
+    const detailLines = orderedLeadDetails(selectedLead.details).map(([key, value]) => `${leadDetailLabels[key] || key}: ${formatLeadValue(value)}`);
+    void navigator.clipboard.writeText([
+      `${selectedLead.name} - Phoenix Fitness Lead`,
+      `Date: ${formatLeadDate(selectedLead.created_at)}`,
+      `Phone: ${selectedLead.phone}`,
+      `Email: ${selectedLead.email}`,
+      `Source: ${selectedLead.source}`,
+      "",
+      "Message:",
+      selectedLead.message,
+      "",
+      "Intake Details:",
+      ...detailLines,
+    ].join("\n"));
+  }
+
+  if (!leads.length) {
+    return (
+      <div className="leadEmptyState">
+        <h2>No leads captured yet</h2>
+        <p>New intake submissions will appear here with contact info, goals, schedule, health notes, nutrition support, and trainer notes.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="leadTable">
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Name</th>
-            <th>Phone</th>
-            <th>Email</th>
-            <th>Message</th>
-            <th>Intake Details</th>
-          </tr>
-        </thead>
-        <tbody>
-          {leads.map((lead) => (
-            <tr key={lead.id}>
-              <td>{new Date(lead.created_at).toLocaleString()}</td>
-              <td>{lead.name}</td>
-              <td>{lead.phone}</td>
-              <td><a href={`mailto:${lead.email}`}>{lead.email}</a></td>
-              <td>{lead.message}</td>
-              <td>
-                <LeadDetails details={lead.details} />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {!leads.length ? <p>No leads captured yet.</p> : null}
+    <div className="leadInbox">
+      <section className="leadInsightBar" aria-label="Lead summary">
+        <article>
+          <span>Total leads</span>
+          <strong>{leads.length}</strong>
+          <small>Captured from the site</small>
+        </article>
+        <article>
+          <span>Today</span>
+          <strong>{todayCount}</strong>
+          <small>New submissions</small>
+        </article>
+        <article>
+          <span>With intake</span>
+          <strong>{intakeCount}</strong>
+          <small>Detailed questionnaires</small>
+        </article>
+        <article>
+          <span>Latest</span>
+          <strong>{latestLead ? latestLead.name : "-"}</strong>
+          <small>{latestLead ? formatLeadDate(latestLead.created_at) : "No recent leads"}</small>
+        </article>
+      </section>
+
+      <section className="leadListPane" aria-label="Lead list">
+        <div className="leadListHeader">
+          <div>
+            <span>Showing</span>
+            <strong>{filteredLeads.length} leads</strong>
+          </div>
+          {query ? <button type="button" onClick={() => setQuery("")}>Clear</button> : null}
+        </div>
+        <label className="leadSearch">
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, phone, goal, email..." />
+        </label>
+        <div className="leadCards">
+          {filteredLeads.map((lead) => {
+            const goals = leadDetailPreview(lead, ["goals", "goalOutcome", "trainingHistory"], lead.message);
+            const readiness = leadDetailPreview(lead, ["readiness", "startDate", "trainingPreference"], lead.source);
+            const isActive = selectedLead?.id === lead.id;
+
+            return (
+              <button className={isActive ? "leadCard active" : "leadCard"} key={lead.id} type="button" onClick={() => setSelectedLeadId(lead.id)}>
+                <span className="leadCardInitials">{leadInitials(lead.name)}</span>
+                <span className="leadCardBody">
+                  <strong>{lead.name}</strong>
+                  <small>{formatLeadDate(lead.created_at)}</small>
+                  <small>{lead.phone} · {lead.email}</small>
+                  <p>{goals}</p>
+                  <em>{readiness}</em>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {!filteredLeads.length ? <p className="leadNoResults">No leads match that search.</p> : null}
+      </section>
+
+      <section className="leadDetailPane" aria-label="Selected lead">
+        {selectedLead ? (
+          <>
+            <div className="leadDetailHeader">
+              <span className="leadDetailInitials">{leadInitials(selectedLead.name)}</span>
+              <div>
+                <p>{formatLeadDate(selectedLead.created_at)}</p>
+                <h2>{selectedLead.name}</h2>
+                <span>{selectedLead.source}</span>
+              </div>
+              <div className="leadQuickActions">
+                <a href={`tel:${selectedLead.phone}`}>Call</a>
+                <a href={`mailto:${selectedLead.email}`}>Email</a>
+                <button type="button" onClick={copySelectedLead}>Copy</button>
+              </div>
+            </div>
+
+            <div className="leadContactGrid">
+              <article>
+                <span>Phone</span>
+                <strong>{selectedLead.phone}</strong>
+              </article>
+              <article>
+                <span>Email</span>
+                <strong>{selectedLead.email}</strong>
+              </article>
+              <article>
+                <span>Answers</span>
+                <strong>{detailCount}</strong>
+              </article>
+              <article>
+                <span>Status</span>
+                <strong>New lead</strong>
+              </article>
+            </div>
+
+            <div className="leadMessageBox">
+              <span>Trainer notes / final message</span>
+              <p>{selectedLead.message}</p>
+            </div>
+
+            <LeadDetails details={selectedLead.details} />
+          </>
+        ) : (
+          <div className="leadEmptyState compact">
+            <h2>Select a lead</h2>
+            <p>Pick a lead from the list to view the full intake.</p>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
 
 function LeadDetails({ details }: { details?: Record<string, unknown> }) {
-  if (!details || !Object.keys(details).length) {
-    return <span>No intake details</span>;
-  }
+  const entries = orderedLeadDetails(details);
 
-  const labels: Record<string, string> = {
-    goals: "Goals",
-    motivation: "Goal outcome",
-    trainingHistory: "Fitness background",
-    healthHistory: "Health history",
-    injuries: "Injuries or limitations",
-    availability: "Availability",
-    preferredStart: "Preferred start",
-    weeklySessions: "Sessions per week",
-    trainingPreference: "Training preference",
-    nutritionSupport: "Nutrition support",
-    supplements: "Supplements",
-    biggestObstacle: "Consistency obstacle",
-    readiness: "Readiness",
-    trainerNotes: "Trainer notes",
-    contactName: "Contact name",
-    contactPhone: "Contact phone",
-    contactEmail: "Contact email",
-  };
-  const order = [
-    "goals",
-    "motivation",
-    "trainingHistory",
-    "healthHistory",
-    "injuries",
-    "availability",
-    "preferredStart",
-    "weeklySessions",
-    "trainingPreference",
-    "nutritionSupport",
-    "supplements",
-    "biggestObstacle",
-    "readiness",
-    "trainerNotes",
-    "contactName",
-    "contactPhone",
-    "contactEmail",
-  ];
-  const orderedEntries = [
-    ...order.filter((key) => key in details).map((key) => [key, details[key]] as [string, unknown]),
-    ...Object.entries(details).filter(([key]) => !order.includes(key)),
-  ];
+  if (!entries.length) {
+    return (
+      <div className="leadDetails">
+        <p>No intake details were submitted with this lead.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="leadDetails">
-      {orderedEntries.map(([key, value]) => (
-        <p key={key}>
-          <strong>{labels[key] || key.replace(/([A-Z])/g, " $1")}: </strong>
-          {Array.isArray(value) ? value.join(", ") : String(value || "Not answered")}
-        </p>
+      <div className="leadDetailSectionTitle">
+        <span>Intake answers</span>
+        <strong>{entries.length}</strong>
+      </div>
+      {entries.map(([key, value]) => (
+        <article key={key}>
+          <span>{leadDetailLabels[key] || key.replace(/([A-Z])/g, " $1")}</span>
+          <p>{formatLeadValue(value)}</p>
+        </article>
       ))}
     </div>
   );
